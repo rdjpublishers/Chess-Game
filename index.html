@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chess Game – Play vs Computer or Two-Player | Free Online Chess | RDJpublishers</title>
+    <meta name="description" content="Play chess online for free. Choose between two-player mode (friend vs friend) or challenge the computer AI. Full chess rules: castling, en passant, pawn promotion, check and checkmate. No sign-up, no download. Built by RDJpublishers.">
+    <meta name="keywords" content="chess game, play chess online, two-player chess, chess vs computer, free chess, browser chess, no download, chess AI, Chess Master, Chess Duo, RDJpublishers">
+    <meta name="author" content="RDJpublishers">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#000000">
+    <link rel="canonical" href="https://rdjpublishers.github.io/Chess-Game/">
+    <link rel="icon" type="image/png" href="Logo.png">
+    <link rel="apple-touch-icon" href="Logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rdjpublishers.github.io/Chess-Game/">
+    <meta property="og:title" content="Chess Game – Play vs Computer or Two-Player | Free Online Chess">
+    <meta property="og:description" content="Free online chess with two modes: play against a friend or challenge the computer AI. Castling, en passant, pawn promotion. No sign-up, no download.">
+    <meta property="og:image" content="https://rdjpublishers.github.io/Chess-Game/Logo.png">
+    <meta property="og:site_name" content="RDJpublishers">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Chess Game – Play vs Computer or Two-Player">
+    <meta name="twitter:description" content="Free online chess: two-player mode or vs AI. Play instantly in your browser. No download needed.">
+    <meta name="twitter:image" content="https://rdjpublishers.github.io/Chess-Game/Logo.png">
+    <style>
+        body{margin:0;padding:0;font-family:'Arial',sans-serif;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;color:#fff;touch-action:pan-x pan-y}
+        .screen{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 1s;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+        .screen.active{opacity:1;pointer-events:auto;z-index:10}
+        .full-bg-image{position:absolute;width:100%;height:100%;object-fit:cover;z-index:-1}
+        #rdj-splash{background:#000;justify-content:center;align-items:center}
+        #loading-screen{background:#000;justify-content:center;align-items:center}
+        .loader-container{width:80%;max-width:400px;text-align:center}
+        .loading-text{color:#fff;margin-bottom:20px}
+        .progress-bar-container{height:15px;background:#555;border-radius:8px;overflow:hidden}
+        .progress-bar{height:100%;width:0%;background:#00a859;transition:width 0.1s linear}
+        #main-interface{z-index:20;justify-content:space-between}
+        .top-bar{width:100%;display:flex;justify-content:space-between;align-items:center;padding:10px 20px;box-sizing:border-box;z-index:30}
+        .icon-btn{background:none;border:none;cursor:pointer;padding:5px;transition:transform 0.05s linear;}
+        .icon-btn:active {transform: scale(0.94);}
+        .settings-btn img{width:30px;height:30px}
+        .back-arrow .arrow-symbol{font-size:20px;color:#fff;font-weight:bold;background:#8b0000;padding:3px 6px;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:inline-block;transition:transform 0.05s;}
+        .back-arrow:active .arrow-symbol{transform:scale(0.92);}
+        .settings-btn{background:#8b0000;border-radius:50%;padding:5px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+        #splash-menu{position:absolute;top:50%;transform:translateY(-50%);z-index:40;display:none;flex-direction:column;align-items:center;width:100%}
+        #splash-menu.active{display:flex}
+        .center-container{position:relative;width:90vmin;max-width:500px}
+        .center-image{width:100%;height:auto}
+        .main-menu-btn{background:#ffcc00;color:#8b0000;border:2px solid #8b0000;padding:15px 30px;margin:10px 0;cursor:pointer;font-size:1.2em;font-weight:bold;border-radius:8px;transition:background 0.2s,transform 0.05s linear;position:absolute;left:50%;transform:translateX(-50%);width:90%;max-width:450px;box-sizing:border-box}
+        #two-player-btn{top:110px}#vs-computer-btn{top:175px}
+        .main-menu-btn:hover{background:#fff;transform:translateX(-50%) scale(1.02);}
+        .main-menu-btn:active{transform:translateX(-50%) scale(0.98);}
+        .game-container{display:none;flex-direction:column;align-items:center;width:90vmin;max-width:500px;height:auto;min-height:calc(100vh - 80px);position:relative;margin-top:0;justify-content:center}
+        .game-container.active{display:flex}
+        #board-element{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:90vmin;height:90vmin;max-width:500px;max-height:500px;border:5px solid #663300;box-shadow:0 0 20px rgba(0,0,0,0.5);background-image:url('board.jpg');background-size:cover;background-position:center;margin-top:50px;aspect-ratio:1/1}
+        .square{width:100%;height:100%;display:flex;justify-content:center;align-items:center;cursor:pointer;position:relative;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        .light{background-color:rgba(255,206,158,0.05)}.dark{background-color:rgba(209,139,71,0.05)}
+        .piece{width:115%;height:115%;object-fit:contain;pointer-events:none;position:absolute;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+        .square.selected{box-shadow:inset 0 0 0 4px #0f0;background-color:rgba(0,255,0,0.3)}
+        .square.in-check{background-color:rgba(255,0,0,0.5)!important}
+        .highlight-move{background:radial-gradient(circle,rgba(0,0,255,0.7) 15%,transparent 20%)}
+        .highlight-castling{background:radial-gradient(circle,rgba(0,255,0,0.7) 15%,transparent 20%)}
+        .highlight-capture{box-shadow:inset 0 0 0 4px #8b0000}
+        .ai-last-move-from{box-shadow:inset 0 0 0 4px #0f0!important;background-color:rgba(0,255,0,0.2)!important}
+        .ai-last-move-to{box-shadow:inset 0 0 0 4px #0f0!important;background-color:rgba(0,255,0,0.35)!important}
+        #thinking-indicator{display:none;position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#ffcc00;font-size:0.85em;font-weight:bold;padding:5px 14px;border-radius:20px;border:1px solid #ffcc00;letter-spacing:0.5px;z-index:60;white-space:nowrap}
+        .controls-footer{width:100%;max-width:500px;display:flex;justify-content:space-around;padding:20px 0;z-index:40;margin-top:20px;transform:translateY(25px)}
+        .round-btn{background:#8b0000;color:#fff;border:2px solid #ffcc00;padding:5px 10px;border-radius:50%;width:60px;height:60px;font-size:0.8em;cursor:pointer;display:flex;justify-content:center;align-items:center;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.3);transition:background 0.2s,transform 0.05s linear;-webkit-tap-highlight-color:transparent}
+        .round-btn:hover{background:#a00000;transform:scale(1.03);}
+        .round-btn:active{transform:scale(0.94);}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:100}
+        .modal.visible{display:flex}
+        .modal-content{background:#fff;color:#333;padding:30px;border-radius:12px;width:80%;max-width:400px;text-align:center;box-shadow:0 8px 16px rgba(0,0,0,0.2);font-family:'Segoe UI','Arial',sans-serif}
+        .setting-item{display:flex;justify-content:space-between;align-items:center;margin:20px 0;font-size:1.1em}
+        .switch{padding:10px 20px;border:1px solid #ccc;cursor:pointer;border-radius:8px;background:#e0e0e0;color:#333;transition:background 0.2s,color 0.2s;font-weight:500}
+        .switch.on{background:#00a859;color:#fff}
+        #piece-choice-btns{display:flex;justify-content:space-around;margin-top:20px}
+        .promotion-piece-btn{padding:5px;border:2px solid #333;cursor:pointer;background:#fff;border-radius:8px;transition:transform 0.1s}
+        .promotion-piece-btn:hover{transform:scale(1.1)}.promotion-piece-btn img{width:50px;height:50px}
+        .game-over-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:88vw;max-width:400px;max-height:90vh;background:rgba(0,0,0,0.97);border:4px solid #ffcc00;border-radius:14px;display:none;flex-direction:column;justify-content:center;align-items:center;padding:18px 16px;box-sizing:border-box;z-index:50;overflow-y:auto}
+        .game-over-status{text-align:center;margin-bottom:10px;color:#fff;display:flex;flex-direction:column;align-items:center}
+        .game-over-status h3{margin:8px 0;color:#ffcc00;font-size:1.5em;font-weight:700}
+        .game-over-status .final-image-pair img{width:60px;height:auto;margin:10px 8px}
+        .game-over-options{display:flex;flex-direction:column;width:90%;gap:8px;justify-content:center}
+        .game-over-options .main-menu-btn,.modal-content .main-menu-btn,.about-content .main-menu-btn,.restart-confirm-content .main-menu-btn{position:static;transform:none;width:100%;max-width:100%;display:block;background:#ffcc00;color:#8b0000;border:2px solid #8b0000;padding:12px 20px;font-size:1.1em;font-weight:600;border-radius:8px;cursor:pointer;transition:background 0.2s,transform 0.05s linear;box-sizing:border-box}
+        .game-over-options .main-menu-btn:hover,.modal-content .main-menu-btn:hover,.about-content .main-menu-btn:hover{background:#fff;transform:scale(1.02);}
+        .game-over-options .main-menu-btn:active,.modal-content .main-menu-btn:active,.about-content .main-menu-btn:active{transform:scale(0.98);}
+        #restart-confirm-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:100}
+        .restart-confirm-content{background:#fff;color:#333;padding:30px;border-radius:12px;width:80%;max-width:300px;text-align:center;box-shadow:0 8px 16px rgba(0,0,0,0.2)}
+        .restart-confirm-content button{margin:10px;padding:10px 20px;cursor:pointer;border-radius:8px;border:1px solid #ccc;background:#ffcc00;color:#8b0000;font-weight:500;transition:background 0.2s,transform 0.05s linear}
+        .restart-confirm-content button:active{transform:scale(0.96);}
+        .about-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:101}
+        .about-modal.visible{display:flex}
+        .about-content{background:#fff;color:#333;padding:30px;border-radius:12px;width:80%;max-width:400px;text-align:center;box-shadow:0 8px 16px rgba(0,0,0,0.2);font-family:'Segoe UI','Arial',sans-serif}
+        .about-content h3,.about-content h4{margin:10px 0 5px;color:#333;font-weight:600}
+        .about-content p{margin:5px 0;font-size:1em;line-height:1.4}
+        .about-content .contact-link{color:#00a859;text-decoration:none;font-weight:500}
+        .about-content .contact-link:hover{text-decoration:underline}
+        .about-content .main-menu-btn{margin-top:20px}
+        .settings-modal{z-index:102}
+    </style>
+</head>
+<body>
+    <audio id="move-sound" src="click.mp3" preload="auto"></audio>
+    <audio id="capture-sound" src="click.mp3" preload="auto"></audio>
+    <audio id="button-sound" src="click.mp3" preload="auto"></audio>
+    <div id="rdj-splash" class="screen active"><img src="open_page.jpg" alt="RDJ Technologies" class="full-bg-image"></div>
+    <div id="loading-screen" class="screen"><div class="loader-container"><h2 class="loading-text">Loading...</h2><div class="progress-bar-container"><div id="loading-progress" class="progress-bar"></div></div></div></div>
+    <div id="main-interface" class="screen">
+        <img src="main_page.jpg" alt="Game Background" class="full-bg-image">
+        <header class="top-bar">
+            <button id="back-to-menu-btn" class="icon-btn back-arrow" style="display:none;position:absolute;top:120px;left:10px;"><span class="arrow-symbol">&#8592;</span></button>
+            <button id="open-settings-btn" class="icon-btn settings-btn" style="position:absolute;top:10px;right:10px;"><img src="settings.png" alt="Settings"></button>
+        </header>
+        <div id="splash-menu">
+            <div class="center-container">
+                <img src="center.jpg" alt="Center Image" class="center-image">
+                <button id="two-player-btn" class="main-menu-btn">TWO PLAYER MODE</button>
+                <button id="vs-computer-btn" class="main-menu-btn">PLAY WITH COMPUTER</button>
+            </div>
+        </div>
+        <div id="difficulty-menu" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(0,0,0,0.92);border:3px solid #ffcc00;border-radius:14px;padding:30px 24px;text-align:center;width:85vmin;max-width:380px;box-sizing:border-box;">
+            <h2 style="color:#ffcc00;margin:0 0 8px;font-size:1.5em;letter-spacing:1px;">SELECT DIFFICULTY</h2>
+            <p style="color:#ccc;margin:0 0 20px;font-size:0.9em;">You play as <strong style="color:#fff">White</strong>. Computer plays as <strong style="color:#aaa">Black</strong>.</p>
+            <button id="diff-easy-btn" class="main-menu-btn" style="position:static;transform:none;width:100%;margin:8px 0;display:block;">&#x1F7E2; EASY</button>
+            <button id="diff-medium-btn" class="main-menu-btn" style="position:static;transform:none;width:100%;margin:8px 0;display:block;">&#x1F7E1; MEDIUM</button>
+            <button id="diff-hard-btn" class="main-menu-btn" style="position:static;transform:none;width:100%;margin:8px 0;display:block;">&#x1F534; HARD</button>
+            <button id="diff-back-btn" class="main-menu-btn" style="position:static;transform:none;width:100%;margin:16px 0 0;display:block;background:#333;color:#fff;border-color:#888;">&#8592; BACK</button>
+        </div>
+        <div id="game-board-container" class="game-container">
+            <div id="thinking-indicator">&#9823; Computer is thinking&#8230;</div>
+            <div id="board-element"></div>
+            <footer id="game-controls-footer" class="controls-footer" style="display:none;">
+                <button id="restart-btn" class="round-btn">Restart</button>
+                <button id="undo-btn" class="round-btn">Undo</button>
+                <button id="footer-settings-btn" class="round-btn">Settings</button>
+            </footer>
+        </div>
+        <div id="promotion-modal" class="modal" onclick="event.stopPropagation()"><div class="modal-content" onclick="event.stopPropagation()"><h3>Promote Pawn to:</h3><div id="piece-choice-btns"></div></div></div>
+        <div id="settings-modal" class="modal settings-modal"><div class="modal-content"><h2>Settings</h2><div class="setting-item"><span>Sound Effects</span><button id="sound-switch" class="switch on">ON</button></div><div class="setting-item"><span>About App</span><button id="about-btn" class="main-menu-btn">About App</button></div><button id="close-settings-btn" class="main-menu-btn">Close</button></div></div>
+        <div id="about-modal" class="about-modal"><div class="about-content"><h3>About App</h3><p>A professional two-player chess game built with HTML5 and JavaScript, offering a seamless and engaging experience.</p><h4>App Version</h4><p>1.0.0</p><h4>Developer Info</h4><p>Developed by RDJpublishers.</p><h4>Contact</h4><p>For support, contact us at <a href="mailto:RDJpublishers@gmail.com" class="contact-link">RDJpublishers@gmail.com</a>.</p><button id="close-about-btn" class="main-menu-btn">Close</button></div></div>
+        <div id="game-over-modal" class="game-over-modal"><div style="width:100%;display:flex;flex-direction:column;align-items:center;"><div id="game-over-status-div" class="game-over-status"></div><div class="game-over-options"><button id="game-view-btn" class="main-menu-btn">Game View</button><button id="game-over-restart-btn" class="main-menu-btn">Play Again</button><button id="game-over-menu-btn" class="main-menu-btn">Main Menu</button></div></div></div>
+        <div id="restart-confirm-modal" class="modal" style="display:none;"><div class="restart-confirm-content"><h3>Are you sure you want to restart?</h3><button id="confirm-restart-yes">Yes</button><button id="confirm-restart-no">No</button></div></div>
+        <div id="go-back-confirm-modal" class="modal" style="display:none;"><div class="restart-confirm-content"><h3>Go back to menu?</h3><p style="color:#555;font-size:0.9em;margin-top:0;">Your current game will be lost.</p><button id="confirm-go-back-yes">Yes</button><button id="confirm-go-back-no">No</button></div></div>
+    </div>
+    <script>
+        (function(){
+            if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+                const meta=document.querySelector('meta[name="viewport"]');
+                if(meta)meta.content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no';
+            }
+        })();
+        document.addEventListener('DOMContentLoaded',()=>{
+            // DOM references
+            const rdjSplash=document.getElementById('rdj-splash');
+            const loadingScreen=document.getElementById('loading-screen');
+            const loadingProgress=document.getElementById('loading-progress');
+            const mainInterface=document.getElementById('main-interface');
+            const splashMenu=document.getElementById('splash-menu');
+            const twoPlayerBtn=document.getElementById('two-player-btn');
+            const vsComputerBtn=document.getElementById('vs-computer-btn');
+            const difficultyMenu=document.getElementById('difficulty-menu');
+            const diffEasyBtn=document.getElementById('diff-easy-btn');
+            const diffMediumBtn=document.getElementById('diff-medium-btn');
+            const diffHardBtn=document.getElementById('diff-hard-btn');
+            const diffBackBtn=document.getElementById('diff-back-btn');
+            const gameBoardContainer=document.getElementById('game-board-container');
+            const boardElement=document.getElementById('board-element');
+            const gameControlsFooter=document.getElementById('game-controls-footer');
+            const restartBtn=document.getElementById('restart-btn');
+            const undoBtn=document.getElementById('undo-btn');
+            const openSettingsBtn=document.getElementById('open-settings-btn');
+            const footerSettingsBtn=document.getElementById('footer-settings-btn');
+            const backToMenuBtn=document.getElementById('back-to-menu-btn');
+            const settingsModal=document.getElementById('settings-modal');
+            const promotionModal=document.getElementById('promotion-modal');
+            const pieceChoiceBtn=document.getElementById('piece-choice-btns');
+            const soundSwitch=document.getElementById('sound-switch');
+            const closeSettingsBtn=document.getElementById('close-settings-btn');
+            const aboutBtn=document.getElementById('about-btn');
+            const aboutModal=document.getElementById('about-modal');
+            const closeAboutBtn=document.getElementById('close-about-btn');
+            const gameOverModal=document.getElementById('game-over-modal');
+            const gameOverStatusDiv=document.getElementById('game-over-status-div');
+            const gameViewBtn=document.getElementById('game-view-btn');
+            const gameOverRestartBtn=document.getElementById('game-over-restart-btn');
+            const gameOverMenuBtn=document.getElementById('game-over-menu-btn');
+            const thinkingIndicator=document.getElementById('thinking-indicator');
+            const restartConfirmModal=document.getElementById('restart-confirm-modal');
+            const confirmRestartYes=document.getElementById('confirm-restart-yes');
+            const confirmRestartNo=document.getElementById('confirm-restart-no');
+            const goBackConfirmModal=document.getElementById('go-back-confirm-modal');
+            const confirmGoBackYes=document.getElementById('confirm-go-back-yes');
+            const confirmGoBackNo=document.getElementById('confirm-go-back-no');
+            const moveSound=document.getElementById('move-sound');
+            const captureSound=document.getElementById('capture-sound');
+            const buttonSound=document.getElementById('button-sound');
+            [moveSound,captureSound,buttonSound].forEach(s=>{if(s)s.load();});
+            
+            // State
+            let isSoundAvailable=true,isSoundOn=true,isSettingsOpen=false,isGameOver=false,checkmatedColor=null,selectedSquare=null,turn='white',moveHistory=[],enPassantTarget=null,canCastle={K:true,Q:true,k:true,q:true},isComputerMode=false,computerColor='black',aiDifficulty='medium',aiThinking=false,lastAiMove=null,activeWorker=null,aiTimeout=null,aiSafetyTimer=null;
+            const WHITE_EN_PASSANT_ROW=5,BLACK_EN_PASSANT_ROW=2,WHITE_PAWN_START_ROW=6,BLACK_PAWN_START_ROW=1;
+            const initialBoard=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];
+            let board=JSON.parse(JSON.stringify(initialBoard));
+            const pieceImages={r:'b_Rook.png',n:'b_Knight.png',b:'b_Bishop.png',q:'b_Queen.png',k:'b_King.png',p:'b_Pawn.png',R:'w_Rook.png',N:'w_Knight.png',B:'w_Bishop.png',Q:'w_Queen.png',K:'w_King.png',P:'w_Pawn.png'};
+            
+            // Web Worker code as a function to avoid syntax errors
+            function createWorkerCode() {
+                // Using function.toString() to get clean code
+                return `
+                    const WEP=5,BEP=2,WPS=6,BPS=1;
+                    const PV={p:100,n:320,b:330,r:500,q:900,k:20000};
+                    const PST={
+                        p:[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
+                        n:[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
+                        b:[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
+                        r:[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],
+                        q:[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],
+                        k:[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]]
+                    };
+                    const transTable = new Map();
+                    const killerMoves = new Array(64).fill(null).map(() => ({move:null,count:0}));
+                    let searchDeadline = Infinity;
+                    
+                    function boardKey(b,turn,cc,ep){ return JSON.stringify({b,t:turn,c:cc,e:ep}); }
+                    function gc(p){ return p ? (p===p.toUpperCase()?'white':'black') : null; }
+                    function ev(b){ let s=0; for(let r=0;r<8;r++) for(let c=0;c<8;c++){ const p=b[r][c]; if(!p)continue; const pt=p.toLowerCase(),iw=p===p.toUpperCase(),pr=iw?7-r:r,pv=PST[pt]?PST[pt][pr][c]:0; s+=iw?(PV[pt]+pv):-(PV[pt]+pv); } return s; }
+                    function pc(fr,fc,tr,tc,b){ const sr=tr===fr?0:(tr>fr?1:-1), sc=tc===fc?0:(tc>fc?1:-1); let r=fr+sr,c=fc+sc; while(r!==tr||c!==tc){ if(b[r][c]!=='') return false; r+=sr; c+=sc; } return true; }
+                    function fk(b,col){ const kp=col==='white'?'K':'k'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(b[r][c]===kp) return{r,c}; return null; }
+                    function sa(tr,tc,b,ac){ for(let r=0;r<8;r++) for(let c=0;c<8;c++){ const p=b[r][c]; if(!p||gc(p)!==ac) continue; const pt=p.toLowerCase(); if(pt==='p'){ const d=ac==='white'?-1:1; if(r+d===tr&&Math.abs(c-tc)===1) return true; continue; } if(vm(r,c,tr,tc,b,null,{K:true,Q:true,k:true,q:true},true)) return true; } return false; }
+                    function kc(b,col){ const kp=fk(b,col); if(!kp) return false; return sa(kp.r,kp.c,b,col==='white'?'black':'white'); }
+                    function sm(fr,fc,tr,tc,b,pc2,ep){ const nb=b.map(r=>[...r]); const p=nb[fr][fc]; if(p.toLowerCase()==='p'&&Math.abs(tc-fc)===1&&!nb[tr][tc]&&ep&&tr===ep.r&&tc===ep.c){ const cpr=pc2==='white'?tr+1:tr-1; nb[cpr][tc]=''; } if(p.toLowerCase()==='k'&&Math.abs(tc-fc)===2){ const hr=pc2==='white'?7:0; if(tc===6){ nb[hr][5]=nb[hr][7]; nb[hr][7]=''; } else{ nb[hr][3]=nb[hr][0]; nb[hr][0]=''; } } nb[tr][tc]=p; nb[fr][fc]=''; return nb; }
+                    function vm(fr,fc,tr,tc,b,ep,cc,sk=false){ const p=b[fr][fc]; if(!p) return false; const pc2=gc(p), tp=b[tr][tc], tc2=gc(tp); if(tp&&tc2===pc2) return false; const dR=tr-fr, dC=tc-fc, aDR=Math.abs(dR), aDC=Math.abs(dC), pt=p.toLowerCase(); let ok=false; if(pt==='p'){ const dir=pc2==='white'?-1:1; if(dC===0&&dR===dir&&!tp) ok=true; else if(dC===0&&dR===2*dir&&!tp){ const sr=pc2==='white'?WPS:BPS; if(fr===sr&&!b[fr+dir][fc]) ok=true; } else if(aDC===1&&dR===dir&&tp&&tc2!==pc2) ok=true; else if(aDC===1&&dR===dir&&!tp&&ep&&tr===ep.r&&tc===ep.c){ const cpr=pc2==='white'?tr+1:tr-1; const cp=b[cpr]&&b[cpr][tc]; if(cp&&gc(cp)!==pc2&&cp.toLowerCase()==='p') ok=true; } } else if(pt==='n'){ ok=(aDR===1&&aDC===2)||(aDR===2&&aDC===1); } else if(pt==='b'){ ok=aDR===aDC&&pc(fr,fc,tr,tc,b); } else if(pt==='r'){ ok=(dR===0||dC===0)&&pc(fr,fc,tr,tc,b); } else if(pt==='q'){ ok=(aDR===aDC||dR===0||dC===0)&&pc(fr,fc,tr,tc,b); } else if(pt==='k'){ if(aDR<=1&&aDC<=1) ok=true; else if(!sk&&aDR===0&&aDC===2&&cc){ const hr=pc2==='white'?7:0; if(fr===hr&&fc===4&&!kc(b,pc2)){ const opp=pc2==='white'?'black':'white'; if(tc===6&&cc[pc2==='white'?'K':'k']&&b[hr][5]===''&&b[hr][6]===''&&!sa(hr,5,b,opp)&&!sa(hr,6,b,opp)) ok=true; if(tc===2&&cc[pc2==='white'?'Q':'q']&&b[hr][3]===''&&b[hr][2]===''&&b[hr][1]===''&&!sa(hr,3,b,opp)&&!sa(hr,2,b,opp)) ok=true; } } } if(!ok) return false; if(sk) return true; return !kc(sm(fr,fc,tr,tc,b,pc2,ep),pc2); }
+                    function am(b,mv,col,ep,cc){ const nb=b.map(r=>[...r]), ncc={...cc}; const p=nb[mv.fr][mv.fc], pt=p.toLowerCase(); let nep=null; if(pt==='k'&&Math.abs(mv.tc-mv.fc)===2){ const hr=col==='white'?7:0; if(mv.tc===6){ nb[hr][5]=nb[hr][7]; nb[hr][7]=''; } else{ nb[hr][3]=nb[hr][0]; nb[hr][0]=''; } } if(pt==='p'&&Math.abs(mv.tc-mv.fc)===1&&!nb[mv.tr][mv.tc]&&ep&&mv.tr===ep.r&&mv.tc===ep.c){ const cpr=col==='white'?mv.tr+1:mv.tr-1; nb[cpr][mv.tc]=''; } if(pt==='p'&&Math.abs(mv.tr-mv.fr)===2){ const tR=col==='white'?WEP:BEP; nep={r:tR,c:mv.tc}; } if(pt==='k'){ ncc[col==='white'?'K':'k']=false; ncc[col==='white'?'Q':'q']=false; } else if(pt==='r'){ if(mv.fr===7){ if(mv.fc===0) ncc.Q=false; if(mv.fc===7) ncc.K=false; } if(mv.fr===0){ if(mv.fc===0) ncc.q=false; if(mv.fc===7) ncc.k=false; } } nb[mv.tr][mv.tc]=p; nb[mv.fr][mv.fc]=''; if(pt==='p'&&(mv.tr===0||mv.tr===7)) nb[mv.tr][mv.tc]=col==='white'?'Q':'q'; return {nb,nep,ncc}; }
+                    function lm(b,col,ep,cc){ const moves=[]; for(let r1=0;r1<8;r1++) for(let c1=0;c1<8;c1++){ if(b[r1][c1]&&gc(b[r1][c1])===col) for(let r2=0;r2<8;r2++) for(let c2=0;c2<8;c2++) if(vm(r1,c1,r2,c2,b,ep,cc)) moves.push({fr:r1,fc:c1,tr:r2,tc:c2}); } return moves; }
+                    function mvvLva(mv,b){ if(!mv||mv.fr===undefined||mv.fc===undefined||mv.tr===undefined||mv.tc===undefined) return 0; const attacker=b[mv.fr]?.[mv.fc]?.toLowerCase()||''; const victim=b[mv.tr]?.[mv.tc]?.toLowerCase()||''; const val={p:1,n:2,b:3,r:4,q:5,k:6}; return (val[victim]||0)*10 - (val[attacker]||0); }
+                    function orderMoves(moves,b,depth,killer){ return moves.sort((a,b)=>{ const aCap=!!b[a.tr]?.[a.tc], bCap=!!b[b.tr]?.[b.tc]; if(aCap&&!bCap) return -1; if(!aCap&&bCap) return 1; if(aCap&&bCap) return mvvLva(b,b)-mvvLva(a,b); const ka=killer?.find(k=>k?.move?.fr===a.fr&&k.move.fc===a.fc&&k.move.tr===a.tr&&k.move.tc===a.tc); const kb=killer?.find(k=>k?.move?.fr===b.fr&&k.move.fc===b.fc&&k.move.tr===b.tr&&k.move.tc===b.tc); if(ka&&!kb) return -1; if(!ka&&kb) return 1; return 0; }); }
+                    function mm(b,depth,al,be,isMx,col,ep,cc){
+                        if(Date.now() > searchDeadline) throw new Error('timeout');
+                        const key = boardKey(b,col,cc,ep);
+                        const cached = transTable.get(key);
+                        if(cached && cached.depth >= depth){
+                            if(cached.flag==='exact') return {score:cached.score, move:cached.move};
+                            if(cached.flag==='lower' && cached.score >= be) return {score:cached.score, move:cached.move};
+                            if(cached.flag==='upper' && cached.score <= al) return {score:cached.score, move:cached.move};
+                        }
+                        if(depth === 0) return {score:ev(b)};
+                        const moves = lm(b,col,ep,cc);
+                        if(moves.length === 0){ const inCheck = kc(b,col); return {score: inCheck ? (isMx ? -99999 : 99999) : 0}; }
+                        const ordered = orderMoves(moves,b,depth,killerMoves);
+                        let bestMove = null, origAl = al, origBe = be;
+                        const opp = col==='white'?'black':'white';
+                        if(isMx){
+                            let max = -Infinity;
+                            for(const mv of ordered){
+                                const {nb,nep,ncc} = am(b,mv,col,ep,cc);
+                                const res = mm(nb,depth-1,al,be,false,opp,nep,ncc);
+                                if(res.score > max){ max = res.score; bestMove = mv; }
+                                al = Math.max(al,max);
+                                if(be <= al){
+                                    if(!b[mv.tr]?.[mv.tc]){ const idx=depth%64; killerMoves[idx]={move:mv,count:(killerMoves[idx]?.count||0)+1}; }
+                                    break;
+                                }
+                            }
+                            const flag = max<=origAl?'upper':(max>=origBe?'lower':'exact');
+                            transTable.set(key,{depth,score:max,move:bestMove,flag});
+                            return {score:max, move:bestMove};
+                        } else {
+                            let min = Infinity;
+                            for(const mv of ordered){
+                                const {nb,nep,ncc} = am(b,mv,col,ep,cc);
+                                const res = mm(nb,depth-1,al,be,true,opp,nep,ncc);
+                                if(res.score < min){ min = res.score; bestMove = mv; }
+                                be = Math.min(be,min);
+                                if(be <= al){
+                                    if(!b[mv.tr]?.[mv.tc]){ const idx=depth%64; killerMoves[idx]={move:mv,count:(killerMoves[idx]?.count||0)+1}; }
+                                    break;
+                                }
+                            }
+                            const flag = min<=origAl?'upper':(min>=origBe?'lower':'exact');
+                            transTable.set(key,{depth,score:min,move:bestMove,flag});
+                            return {score:min, move:bestMove};
+                        }
+                    }
+                    self.onmessage = function(e){
+                        const {board, maxTime, computerColor, enPassantTarget, canCastle} = e.data;
+                        transTable.clear();
+                        killerMoves.forEach((_,i)=>killerMoves[i]={move:null,count:0});
+                        const moves = lm(board,computerColor,enPassantTarget,canCastle);
+                        if(moves.length === 0){ self.postMessage({move:null}); return; }
+                        let bestMove = moves[Math.floor(Math.random()*moves.length)];
+                        const start = Date.now();
+                        searchDeadline = start + maxTime - 15;
+                        for(let depth=1; ; depth++){
+                            try {
+                                const result = mm(board, depth, -Infinity, Infinity, false, computerColor, enPassantTarget, canCastle);
+                                if(result.move) bestMove = result.move;
+                                if(Date.now() > searchDeadline) break;
+                            } catch(err){
+                                if(err.message === 'timeout') break;
+                                else throw err;
+                            }
+                            if(Date.now() > searchDeadline) break;
+                            if(depth >= 10) break;
+                        }
+                        self.postMessage({move:bestMove});
+                    };
+                `;
+            }
+            const workerCode = createWorkerCode();
+            const workerBlob = new Blob([workerCode], {type:'application/javascript'});
+            const workerUrl = URL.createObjectURL(workerBlob);
+            
+            // Helper functions
+            function getPieceColor(p){return p?p===p.toUpperCase()?'white':'black':null;}
+            function findKing(b,color){const kp=color==='white'?'K':'k';for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]===kp)return{r,c};return null;}
+            function isPathClear(fr,fc,tr,tc,b){const sr=tr===fr?0:(tr>fr?1:-1),sc=tc===fc?0:(tc>fc?1:-1);let r=fr+sr,c=fc+sc;while(r!==tr||c!==tc){if(b[r][c]!=='')return false;r+=sr;c+=sc;}return true;}
+            function simulateMoveBoard(fr,fc,tr,tc,ob,pc,ep){const nb=ob.map(r=>[...r]);const p=nb[fr][fc];if(p.toLowerCase()==='p'&&Math.abs(tc-fc)===1&&!nb[tr][tc]&&ep&&tr===ep.r&&tc===ep.c)nb[pc==='white'?tr+1:tr-1][tc]='';if(p.toLowerCase()==='k'&&Math.abs(tc-fc)===2){const hr=pc==='white'?7:0;if(tc===6){nb[hr][5]=nb[hr][7];nb[hr][7]='';}else{nb[hr][3]=nb[hr][0];nb[hr][0]='';}}nb[tr][tc]=p;nb[fr][fc]='';return nb;}
+            function isSquareAttacked(tr,tc,b,ac,ep){for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=b[r][c];if(!p||getPieceColor(p)!==ac)continue;if(p.toLowerCase()==='p'){const d=ac==='white'?-1:1;if(r+d===tr&&Math.abs(c-tc)===1)return true;continue;}if(isValidMove(r,c,tr,tc,b,ep,true))return true;}return false;}
+            function isKingInCheck(b,color,ep){const kp=findKing(b,color);if(!kp)return false;return isSquareAttacked(kp.r,kp.c,b,color==='white'?'black':'white',ep);}
+            function isValidMove(fr,fc,tr,tc,b,ep,skipCheck){
+                if(ep===undefined)ep=enPassantTarget;if(skipCheck===undefined)skipCheck=false;
+                const piece=b[fr][fc];if(!piece)return false;const pc=getPieceColor(piece),target=b[tr][tc];
+                if(target&&getPieceColor(target)===pc)return false;
+                const dR=tr-fr,dC=tc-fc,aDR=Math.abs(dR),aDC=Math.abs(dC),pt=piece.toLowerCase();let ok=false;
+                switch(pt){
+                    case'p':{const dir=pc==='white'?-1:1;if(dC===0&&dR===dir&&!target)ok=true;else if(dC===0&&dR===2*dir&&!target){const sr=pc==='white'?WHITE_PAWN_START_ROW:BLACK_PAWN_START_ROW;if(fr===sr&&!b[fr+dir][fc])ok=true;}else if(aDC===1&&dR===dir&&target&&getPieceColor(target)!==pc)ok=true;else if(aDC===1&&dR===dir&&!target&&ep&&tr===ep.r&&tc===ep.c){const cpr=pc==='white'?tr+1:tr-1;const cp=b[cpr]&&b[cpr][tc];if(cp&&getPieceColor(cp)!==pc&&cp.toLowerCase()==='p')ok=true;}break;}
+                    case'n':ok=(aDR===1&&aDC===2)||(aDR===2&&aDC===1);break;
+                    case'b':ok=aDR===aDC&&isPathClear(fr,fc,tr,tc,b);break;
+                    case'r':ok=(dR===0||dC===0)&&isPathClear(fr,fc,tr,tc,b);break;
+                    case'q':ok=(aDR===aDC||dR===0||dC===0)&&isPathClear(fr,fc,tr,tc,b);break;
+                    case'k':{if(aDR<=1&&aDC<=1)ok=true;else if(!skipCheck&&aDR===0&&aDC===2){const hr=pc==='white'?7:0,opp=pc==='white'?'black':'white';if(fr===hr&&fc===4&&!isKingInCheck(b,pc,ep)){if(tc===6&&canCastle[pc==='white'?'K':'k']&&b[hr][5]===''&&b[hr][6]===''&&!isSquareAttacked(hr,5,b,opp,ep)&&!isSquareAttacked(hr,6,b,opp,ep))ok=true;if(tc===2&&canCastle[pc==='white'?'Q':'q']&&b[hr][3]===''&&b[hr][2]===''&&b[hr][1]===''&&!isSquareAttacked(hr,3,b,opp,ep)&&!isSquareAttacked(hr,2,b,opp,ep))ok=true;}}break;}
+                }if(!ok)return false;if(skipCheck)return true;
+                return!isKingInCheck(simulateMoveBoard(fr,fc,tr,tc,b,pc,ep),pc,null);
+            }
+            
+            // AI cancel helpers
+            function cancelAIFully(){
+                if(aiSafetyTimer){ clearTimeout(aiSafetyTimer); aiSafetyTimer=null; }
+                if(aiTimeout){ clearTimeout(aiTimeout); aiTimeout=null; }
+                if(activeWorker){ activeWorker.terminate(); activeWorker=null; }
+                aiThinking=false;
+                boardElement.style.pointerEvents='';
+                thinkingIndicator.style.display='none';
+            }
+            function startAIComputation(maxTime){
+                if(!isComputerMode||turn!==computerColor||isGameOver) { unlockBoard(); return; }
+                if(typeof maxTime !== 'number' || maxTime <= 0) maxTime = 1200;
+                cancelAIFully();
+                const worker = new Worker(workerUrl);
+                activeWorker = worker;
+                aiThinking=true;
+                boardElement.style.pointerEvents='none';
+                thinkingIndicator.style.display='block';
+                const safetyTimer = setTimeout(()=>{
+                    if(!aiThinking) return;
+                    if(activeWorker !== worker) return;
+                    cancelAIFully();
+                    const moves=[];
+                    for(let r1=0;r1<8;r1++)for(let c1=0;c1<8;c1++)if(board[r1][c1]&&getPieceColor(board[r1][c1])===computerColor)for(let r2=0;r2<8;r2++)for(let c2=0;c2<8;c2++)if(isValidMove(r1,c1,r2,c2,board))moves.push({fr:r1,fc:c1,tr:r2,tc:c2});
+                    unlockBoard();
+                    if(moves.length && !isGameOver && turn===computerColor){
+                        const mv=moves[Math.floor(Math.random()*moves.length)];
+                        lastAiMove={fr:mv.fr,fc:mv.fc,tr:mv.tr,tc:mv.tc};
+                        makeMove(mv.fr,mv.fc,mv.tr,mv.tc);
+                    }
+                }, maxTime+500);
+                aiSafetyTimer = safetyTimer;
+                worker.onmessage = (e)=>{
+                    if(activeWorker !== worker) return;
+                    if(!aiThinking) return;
+                    cancelAIFully();
+                    const mv = e.data.move;
+                    if(!mv || isGameOver || turn!==computerColor) return;
+                    lastAiMove={fr:mv.fr,fc:mv.fc,tr:mv.tr,tc:mv.tc};
+                    makeMove(mv.fr,mv.fc,mv.tr,mv.tc);
+                };
+                worker.onerror = ()=>{ if(activeWorker===worker) cancelAIFully(); unlockBoard(); };
+                worker.postMessage({board:board.map(r=>[...r]), maxTime, computerColor, enPassantTarget, canCastle:{...canCastle}});
+            }
+            function triggerComputerMove(){
+                if(!isComputerMode||turn!==computerColor||isGameOver||aiThinking) return;
+                cancelAIFully();
+                let maxTime = (aiDifficulty==='easy')?1000:(aiDifficulty==='medium'?1200:2500);
+                startAIComputation(maxTime);
+            }
+            function unlockBoard(){ boardElement.style.pointerEvents=''; thinkingIndicator.style.display='none'; aiThinking=false; }
+            
+            function saveState(){moveHistory.push({board:board.map(r=>[...r]),turn,canCastle:{...canCastle},enPassantTarget:enPassantTarget?{...enPassantTarget}:null});}
+            function makeMove(fr,fc,tr,tc){
+                const piece=board[fr][fc],pc=getPieceColor(piece),isCapture=!!board[tr][tc];let isEnPassant=false;saveState();
+                if(piece.toLowerCase()==='k'&&Math.abs(tc-fc)===2){const hr=pc==='white'?7:0;const rfc=tc===6?7:0,rtc=tc===6?5:3;board[hr][rtc]=board[hr][rfc];board[hr][rfc]='';}
+                if(piece.toLowerCase()==='p'&&Math.abs(tc-fc)===1&&!isCapture&&enPassantTarget&&tr===enPassantTarget.r&&tc===enPassantTarget.c){board[pc==='white'?tr+1:tr-1][tc]='';isEnPassant=true;}
+                enPassantTarget=(piece.toLowerCase()==='p'&&Math.abs(tr-fr)===2)?{r:pc==='white'?WHITE_EN_PASSANT_ROW:BLACK_EN_PASSANT_ROW,c:tc}:null;
+                if(piece.toLowerCase()==='k'){canCastle[pc==='white'?'K':'k']=false;canCastle[pc==='white'?'Q':'q']=false;}
+                else if(piece.toLowerCase()==='r'){if(fr===7){if(fc===0)canCastle.Q=false;if(fc===7)canCastle.K=false;}if(fr===0){if(fc===0)canCastle.q=false;if(fc===7)canCastle.k=false;}}
+                board[tr][tc]=piece;board[fr][fc]='';
+                if(isSoundOn&&isSoundAvailable){try{(isCapture||isEnPassant?captureSound:moveSound).play().catch(()=>{isSoundAvailable=false;});}catch(e){isSoundAvailable=false;}}
+                turn=pc==='white'?'black':'white';
+                if(piece.toLowerCase()==='p'&&(tr===0||tr===7)){renderBoard();handlePawnPromotion(tr,tc,pc);}
+                else{renderBoard();checkGameEndState();if(!isGameOver)triggerComputerMove();}
+            }
+            function checkGameEndState(){
+                const playerColor=turn;let hasMoves=false;
+                outer:for(let r1=0;r1<8;r1++)for(let c1=0;c1<8;c1++)if(board[r1][c1]&&getPieceColor(board[r1][c1])===playerColor)for(let r2=0;r2<8;r2++)for(let c2=0;c2<8;c2++)if(isValidMove(r1,c1,r2,c2,board)){hasMoves=true;break outer;}
+                if(!hasMoves){isGameOver=true;const inCheck=isKingInCheck(board,playerColor,enPassantTarget);checkmatedColor=inCheck?playerColor:null;moveHistory.push({board:board.map(r=>[...r]),turn,canCastle:{...canCastle},enPassantTarget:enPassantTarget?{...enPassantTarget}:null,isFinalState:true,checkmatedColor});
+                if(inCheck){const w=playerColor==='white'?'Black':'White';showGameOverModal(`${w} checkmates ${playerColor}, ${w} wins`);}else showGameOverModal('Stalemate! Game is a Draw.');}
+            }
+            function renderBoard(){
+                boardElement.innerHTML='';const ctc=(isGameOver&&checkmatedColor)?checkmatedColor:turn;const kingInCheck=isKingInCheck(board,ctc,enPassantTarget),kingPos=kingInCheck?findKing(board,ctc):null;
+                for(let r=0;r<8;r++)for(let c=0;c<8;c++){const sq=document.createElement('div');sq.classList.add('square',(r+c)%2===0?'light':'dark');sq.dataset.row=r;sq.dataset.col=c;
+                if(kingPos&&r===kingPos.r&&c===kingPos.c)sq.classList.add('in-check');
+                if(lastAiMove){if(r===lastAiMove.fr&&c===lastAiMove.fc)sq.classList.add('ai-last-move-from');else if(r===lastAiMove.tr&&c===lastAiMove.tc)sq.classList.add('ai-last-move-to');}
+                const pc=board[r][c];if(pc){const img=document.createElement('img');img.classList.add('piece');img.src=pieceImages[pc];img.alt=pc;sq.appendChild(img);}
+                boardElement.appendChild(sq);}
+                if(selectedSquare){const{r,c}=selectedSquare;const sqEl=boardElement.querySelector(`[data-row="${r}"][data-col="${c}"]`);if(sqEl){sqEl.classList.add('selected');highlightLegalMoves(r,c);}}
+            }
+            function highlightLegalMoves(fr,fc){for(let tr=0;tr<8;tr++)for(let tc=0;tc<8;tc++){if(!isValidMove(fr,fc,tr,tc,board))continue;const sq=boardElement.querySelector(`[data-row="${tr}"][data-col="${tc}"]`);if(!sq)continue;const isCapture=!!board[tr][tc],isEP=enPassantTarget&&tr===enPassantTarget.r&&tc===enPassantTarget.c,isCastle=board[fr][fc].toLowerCase()==='k'&&Math.abs(tc-fc)===2;if(isCapture||isEP)sq.classList.add('highlight-capture');else if(isCastle)sq.classList.add('highlight-castling');else sq.classList.add('highlight-move');}}
+            function clearHighlights(){boardElement.querySelectorAll('.square').forEach(sq=>sq.classList.remove('selected','highlight-move','highlight-capture','highlight-castling'));}
+            boardElement.addEventListener('click',(e)=>{const sq=e.target.closest('[data-row]');if(!sq)return;handleSquareClick(parseInt(sq.dataset.row),parseInt(sq.dataset.col));});
+            function handleSquareClick(r,c){
+                if(isGameOver||promotionModal.style.display==='flex'||gameOverModal.style.display==='flex'||aiThinking||(isComputerMode&&turn===computerColor))return;
+                const clicked=board[r][c],clickedColor=getPieceColor(clicked);
+                function playClick(){if(isSoundOn&&isSoundAvailable){try{buttonSound.play().catch(()=>{isSoundAvailable=false;});}catch(e){isSoundAvailable=false;}}}
+                if(!selectedSquare){if(clicked&&clickedColor===turn){selectedSquare={r,c};const sqEl=boardElement.querySelector(`[data-row="${r}"][data-col="${c}"]`);if(sqEl)sqEl.classList.add('selected');highlightLegalMoves(r,c);playClick();}}
+                else{const fr=selectedSquare.r,fc=selectedSquare.c;if(fr===r&&fc===c){selectedSquare=null;clearHighlights();playClick();}
+                else if(clicked&&clickedColor===turn){selectedSquare={r,c};clearHighlights();const sqEl=boardElement.querySelector(`[data-row="${r}"][data-col="${c}"]`);if(sqEl)sqEl.classList.add('selected');highlightLegalMoves(r,c);playClick();}
+                else if(isValidMove(fr,fc,r,c,board)){selectedSquare=null;clearHighlights();makeMove(fr,fc,r,c);}}
+            }
+            function handlePawnPromotion(r,c,pc){
+                if(isComputerMode&&pc===computerColor){board[r][c]=pc==='white'?'Q':'q';renderBoard();checkGameEndState();if(!isGameOver)triggerComputerMove();return;}
+                const pieces=pc==='white'?['Q','R','N','B']:['q','r','n','b'];gameBoardContainer.style.opacity='0.3';gameControlsFooter.style.opacity='0.3';promotionModal.style.display='flex';pieceChoiceBtn.innerHTML='';
+                pieces.forEach(p=>{const btn=document.createElement('button');btn.classList.add('promotion-piece-btn');btn.innerHTML=`<img src="${pieceImages[p]}" alt="${p}">`;btn.addEventListener('click',()=>{board[r][c]=p;gameBoardContainer.style.opacity='1';gameControlsFooter.style.opacity='1';promotionModal.style.display='none';renderBoard();checkGameEndState();if(!isGameOver)triggerComputerMove();});pieceChoiceBtn.appendChild(btn);});
+            }
+            function showGameOverModal(msg){gameBoardContainer.style.opacity='0.5';gameControlsFooter.style.opacity='0.5';gameOverModal.style.display='flex';gameOverStatusDiv.innerHTML=`<h3>${msg}</h3><div class="final-image-pair"><img src="w_King.png" alt="White King"><img src="b_Queen.png" alt="Black Queen"></div>`;gameViewBtn.style.display='block';}
+            function restartGame(){cancelAIFully();board=JSON.parse(JSON.stringify(initialBoard));selectedSquare=null;turn='white';moveHistory=[];isGameOver=false;checkmatedColor=null;canCastle={K:true,Q:true,k:true,q:true};enPassantTarget=null;lastAiMove=null;gameOverModal.style.display='none';promotionModal.style.display='none';restartConfirmModal.style.display='none';gameBoardContainer.style.opacity='1';gameControlsFooter.style.opacity='1';boardElement.style.opacity='1';boardElement.style.pointerEvents='';thinkingIndicator.style.display='none';renderBoard();}
+            function playButtonSound(){if(isSoundOn&&isSoundAvailable){try{buttonSound.play().catch(()=>{isSoundAvailable=false;});}catch(e){isSoundAvailable=false;}}}
+            function toggleSound(){isSoundOn=!isSoundOn;soundSwitch.textContent=isSoundOn?'ON':'OFF';soundSwitch.classList.toggle('on',isSoundOn);if(isSoundOn)playButtonSound();}
+            function goToMenu(){cancelAIFully();isSettingsOpen=false;isComputerMode=false;settingsModal.classList.remove('visible');aboutModal.classList.remove('visible');goBackConfirmModal.style.display='none';difficultyMenu.style.display='none';gameBoardContainer.classList.remove('active');gameOverModal.style.display='none';gameControlsFooter.style.display='none';backToMenuBtn.style.display='none';boardElement.style.pointerEvents='';boardElement.style.opacity='1';thinkingIndicator.style.display='none';splashMenu.classList.add('active');restartGame();playButtonSound();}
+            function startGame(){isComputerMode=false;splashMenu.classList.remove('active');gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();playButtonSound();}
+            function startComputerGame(difficulty){isComputerMode=true;aiDifficulty=difficulty;computerColor='black';difficultyMenu.style.display='none';splashMenu.classList.remove('active');gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();playButtonSound();}
+            function viewLastGameState(){if(moveHistory.length){const ls=moveHistory[moveHistory.length-1];board=ls.board.map(r=>[...r]);turn=ls.turn;canCastle={...ls.canCastle};enPassantTarget=ls.enPassantTarget?{...ls.enPassantTarget}:null;checkmatedColor=ls.checkmatedColor||null;isGameOver=true;gameOverModal.style.display='none';gameBoardContainer.style.opacity='1';gameControlsFooter.style.opacity='1';renderBoard();}playButtonSound();}
+            
+            // Fixed Undo for computer mode: when it's player's turn (white), undo both last computer move and previous player move
+            function doUndo(){
+                cancelAIFully();
+                boardElement.style.pointerEvents='';
+                thinkingIndicator.style.display='none';
+                
+                if(isGameOver){
+                    gameOverModal.style.display='none';
+                    gameBoardContainer.style.opacity='1';
+                    gameControlsFooter.style.opacity='1';
+                    isGameOver=false;
+                    checkmatedColor=null;
+                }
+                
+                if(moveHistory.length && moveHistory[moveHistory.length-1].isFinalState){
+                    moveHistory.pop();
+                }
+                
+                if(moveHistory.length === 0) return;
+                
+                // In computer mode, if it's the player's turn (white) and there are at least 2 moves, undo two moves (computer + player)
+                if(isComputerMode && turn === 'white' && moveHistory.length >= 2) {
+                    moveHistory.pop(); // remove computer's move
+                    if(moveHistory.length && moveHistory[moveHistory.length-1].isFinalState) moveHistory.pop();
+                    const lastState = moveHistory.pop();
+                    if(lastState) {
+                        board = lastState.board.map(row => [...row]);
+                        turn = lastState.turn;
+                        canCastle = { ...lastState.canCastle };
+                        enPassantTarget = lastState.enPassantTarget ? { ...lastState.enPassantTarget } : null;
+                    } else {
+                        restartGame();
+                        return;
+                    }
+                } else {
+                    const lastState = moveHistory.pop();
+                    if(lastState) {
+                        board = lastState.board.map(row => [...row]);
+                        turn = lastState.turn;
+                        canCastle = { ...lastState.canCastle };
+                        enPassantTarget = lastState.enPassantTarget ? { ...lastState.enPassantTarget } : null;
+                    } else {
+                        return;
+                    }
+                }
+                
+                isGameOver = false;
+                checkmatedColor = null;
+                lastAiMove = null;
+                selectedSquare = null;
+                
+                renderBoard();
+                playButtonSound();
+                // Do NOT auto-trigger computer move; player now has the turn.
+            }
+            
+            // Event listeners and splash animation
+            rdjSplash.style.pointerEvents='none';
+            setTimeout(()=>{rdjSplash.style.opacity='0';setTimeout(()=>{rdjSplash.classList.remove('active');loadingScreen.classList.add('active');let p=0;const iv=setInterval(()=>{p+=4;loadingProgress.style.width=p+'%';if(p>=100){clearInterval(iv);loadingScreen.style.pointerEvents='none';loadingScreen.style.opacity='0';setTimeout(()=>{loadingScreen.classList.remove('active');mainInterface.classList.add('active');splashMenu.classList.add('active');},600);}},120);},600);},2500);
+            twoPlayerBtn.addEventListener('click',startGame);
+            vsComputerBtn.addEventListener('click',()=>{playButtonSound();splashMenu.classList.remove('active');difficultyMenu.style.display='block';});
+            diffEasyBtn.addEventListener('click',()=>startComputerGame('easy'));
+            diffMediumBtn.addEventListener('click',()=>startComputerGame('medium'));
+            diffHardBtn.addEventListener('click',()=>startComputerGame('hard'));
+            diffBackBtn.addEventListener('click',()=>{playButtonSound();difficultyMenu.style.display='none';splashMenu.classList.add('active');});
+            gameViewBtn.addEventListener('click',viewLastGameState);
+            gameOverRestartBtn.addEventListener('click',()=>{gameOverModal.style.display='none';restartGame();playButtonSound();});
+            gameOverMenuBtn.addEventListener('click',goToMenu);
+            openSettingsBtn.addEventListener('click',()=>{isSettingsOpen=!isSettingsOpen;settingsModal.classList.toggle('visible',isSettingsOpen);playButtonSound();});
+            footerSettingsBtn.addEventListener('click',()=>{isSettingsOpen=!isSettingsOpen;settingsModal.classList.toggle('visible',isSettingsOpen);playButtonSound();});
+            backToMenuBtn.addEventListener('click',()=>{playButtonSound();goBackConfirmModal.style.display='flex';});
+            confirmGoBackYes.addEventListener('click',goToMenu);
+            confirmGoBackNo.addEventListener('click',()=>{goBackConfirmModal.style.display='none';playButtonSound();});
+            soundSwitch.addEventListener('click',toggleSound);
+            closeSettingsBtn.addEventListener('click',()=>{isSettingsOpen=false;settingsModal.classList.remove('visible');playButtonSound();});
+            aboutBtn.addEventListener('click',()=>{isSettingsOpen=false;settingsModal.classList.remove('visible');aboutModal.classList.add('visible');playButtonSound();});
+            closeAboutBtn.addEventListener('click',()=>{aboutModal.classList.remove('visible');playButtonSound();});
+            restartBtn.addEventListener('click',()=>{playButtonSound();restartConfirmModal.style.display='flex';});
+            confirmRestartYes.addEventListener('click',()=>{restartConfirmModal.style.display='none';restartGame();playButtonSound();});
+            confirmRestartNo.addEventListener('click',()=>{restartConfirmModal.style.display='none';playButtonSound();});
+            undoBtn.addEventListener('click',doUndo);
+            renderBoard();
+        });
+    </script>
+</body>
+</html>
