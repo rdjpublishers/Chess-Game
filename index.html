@@ -50,13 +50,21 @@
             --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         }
         *{box-sizing:border-box}
-        body{margin:0;padding:0;font-family:var(--font-body);background:radial-gradient(ellipse 120% 80% at 50% -10%,#241a12 0%,var(--bg-1) 45%,var(--bg-0) 100%);display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;color:var(--ink);touch-action:pan-x pan-y;-webkit-font-smoothing:antialiased}
+        body{margin:0;padding:0;font-family:var(--font-body);background:
+            repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 7px),
+            repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 7px),
+            radial-gradient(ellipse 120% 80% at 50% -10%,#26190f 0%,var(--bg-1) 45%,var(--bg-0) 100%);
+            display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;color:var(--ink);touch-action:pan-x pan-y;-webkit-font-smoothing:antialiased}
         .screen{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity .6s ease;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
         .screen.active{opacity:1;pointer-events:auto;z-index:10}
         .full-bg-image{position:absolute;width:100%;height:100%;object-fit:cover;z-index:-1}
-        #main-interface .full-bg-image{filter:brightness(.6) saturate(.85)}
-        #rdj-splash{background:var(--bg-0);justify-content:center;align-items:center}
-        #loading-screen{background:var(--bg-0);justify-content:center;align-items:center}
+        #main-interface{background:
+            radial-gradient(circle at 50% 32%, rgba(201,162,74,0.16), transparent 55%),
+            radial-gradient(circle at 50% 32%, rgba(201,162,74,0.06), transparent 75%);
+            box-shadow:inset 0 0 0 1px rgba(201,162,74,0.08);
+        }
+        #rdj-splash{background:transparent;justify-content:center;align-items:center}
+        #loading-screen{background:transparent;justify-content:center;align-items:center}
         .loader-container{width:80%;max-width:340px;text-align:center}
         .loading-text{color:var(--brass-bright);margin-bottom:18px;font-family:var(--font-display);font-size:1.7em;font-weight:600;letter-spacing:3px;text-transform:uppercase}
         .progress-bar-container{height:4px;background:rgba(241,232,216,.12);border-radius:4px;overflow:hidden}
@@ -71,18 +79,18 @@
         .settings-btn{background:rgba(20,16,13,.7);border-radius:50%;padding:8px;box-shadow:var(--shadow-soft);border:1px solid var(--brass-dim)}
         #splash-menu{position:absolute;top:50%;transform:translateY(-50%);z-index:40;display:none;flex-direction:column;align-items:center;width:100%}
         #splash-menu.active{display:flex}
-        .center-container{position:relative;width:90vmin;max-width:500px}
+        .center-container{position:relative;width:90vmin;max-width:560px}
         .center-image{width:100%;height:auto;filter:drop-shadow(0 20px 40px rgba(0,0,0,.5))}
-        .main-menu-btn{background:linear-gradient(180deg,var(--burgundy-bright),var(--burgundy) 70%,var(--burgundy-dark));color:var(--ink);border:1px solid var(--brass);padding:15px 30px;margin:10px 0;cursor:pointer;font-family:var(--font-body);font-size:1em;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:var(--radius-md);transition:background 0.2s,transform 0.08s ease,box-shadow .2s;position:absolute;left:50%;transform:translateX(-50%);width:90%;max-width:450px;box-sizing:border-box;box-shadow:var(--shadow-soft)}
+        .main-menu-btn{background:linear-gradient(180deg,var(--burgundy-bright),var(--burgundy) 70%,var(--burgundy-dark));color:var(--ink);border:1px solid var(--brass);padding:15px 30px;margin:10px 0;cursor:pointer;font-family:var(--font-body);font-size:1em;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:var(--radius-md);transition:background 0.2s,transform 0.08s ease,box-shadow .2s;position:absolute;left:50%;transform:translateX(-50%);width:90%;max-width:500px;box-sizing:border-box;box-shadow:var(--shadow-soft)}
         #two-player-btn{top:110px}#vs-computer-btn{top:175px}
         .main-menu-btn:hover{background:linear-gradient(180deg,var(--brass-bright),var(--brass) 70%,var(--brass-dim));color:var(--burgundy-dark);transform:translateX(-50%) scale(1.02);box-shadow:var(--shadow-deep)}
         .main-menu-btn:active{transform:translateX(-50%) scale(0.98);}
-        .game-container{display:none;flex-direction:column;align-items:center;width:90vmin;max-width:500px;height:auto;min-height:calc(100vh - 80px);position:relative;margin-top:0;justify-content:center}
+        .game-container{display:none;flex-direction:column;align-items:center;width:90vmin;max-width:640px;height:auto;min-height:calc(100vh - 80px);position:relative;margin-top:0;justify-content:center}
         .game-container.active{display:flex}
-        #board-element{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:90vmin;height:90vmin;max-width:500px;max-height:500px;border:3px solid var(--brass);outline:7px solid var(--wood);outline-offset:-3px;box-shadow:var(--shadow-deep);background-image:url('board.jpg');background-size:cover;background-position:center;margin-top:100px;aspect-ratio:1/1}
+        #board-element{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:90vmin;height:90vmin;max-width:640px;max-height:640px;border:3px solid var(--brass);outline:7px solid var(--wood);outline-offset:-3px;box-shadow:var(--shadow-deep);background-image:url('board.jpg');background-size:cover;background-position:center;margin-top:clamp(50px,10vh,100px);aspect-ratio:1/1}
         .square{width:100%;height:100%;display:flex;justify-content:center;align-items:center;cursor:pointer;position:relative;box-sizing:border-box;-webkit-tap-highlight-color:transparent;transition:background-color .12s ease}
         .light{background-color:rgba(241,232,216,0.04)}.dark{background-color:rgba(20,15,10,0.16)}
-        .piece{width:112%;height:112%;object-fit:contain;pointer-events:none;position:absolute;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))}
+        .piece{width:126%;height:126%;object-fit:contain;pointer-events:none;position:absolute;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))}
         .square.selected{box-shadow:inset 0 0 0 3px var(--brass-bright);background-color:rgba(201,162,74,0.22)}
         .square.in-check{background-color:rgba(193,68,79,0.55)!important;animation:checkPulse 1s ease-in-out infinite}
         @keyframes checkPulse{0%,100%{background-color:rgba(193,68,79,0.4)}50%{background-color:rgba(193,68,79,0.65)}}
@@ -95,7 +103,7 @@
         .turn-status{display:none;position:absolute;top:48px;left:50%;transform:translateX(-50%);background:rgba(12,10,9,0.55);color:var(--ink-dim);font-size:0.72em;font-weight:500;padding:5px 14px;border-radius:20px;letter-spacing:0.5px;z-index:55;white-space:nowrap;text-transform:uppercase;border:1px solid rgba(201,162,74,0.25)}
         .turn-status.visible{display:block}
         .turn-status.check{color:#fff;background:rgba(193,68,79,0.75);border-color:var(--check-red)}
-        .controls-footer{width:100%;max-width:500px;display:flex;justify-content:center;gap:10px;padding:18px 14px;z-index:40;margin-top:16px;transform:none}
+        .controls-footer{width:100%;max-width:640px;display:flex;justify-content:center;gap:10px;padding:18px 14px;z-index:40;margin-top:16px;transform:none}
         .round-btn{background:rgba(20,16,13,.7);color:var(--ink);border:1px solid var(--brass-dim);padding:14px 8px;border-radius:var(--radius-md);width:auto;flex:1;height:auto;font-family:var(--font-body);font-size:0.72em;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;display:flex;justify-content:center;align-items:center;text-align:center;box-shadow:var(--shadow-soft);transition:background 0.2s,transform 0.08s ease,border-color .2s;-webkit-tap-highlight-color:transparent}
         .round-btn:hover{background:rgba(124,36,49,.35);border-color:var(--brass)}
         .round-btn:active{transform:scale(0.95);}
@@ -134,6 +142,19 @@
         .about-content .contact-link:hover{text-decoration:underline}
         .about-content .main-menu-btn{margin-top:20px}
         .settings-modal{z-index:102}
+        @media (min-width:700px){
+            .main-menu-btn{font-size:1.08em;padding:17px 30px}
+            .round-btn{font-size:0.82em;padding:16px 10px}
+            .modal-content,.about-content{padding:38px 36px;max-width:440px}
+            .game-over-modal{max-width:440px;padding:34px 28px}
+            .restart-confirm-content{max-width:360px;padding:34px 30px}
+            #difficulty-menu{max-width:440px!important;padding:38px 32px!important}
+            .loading-text{font-size:1.9em}
+        }
+        @media (max-height:640px){
+            #board-element{margin-top:clamp(36px,7vh,70px)}
+            .controls-footer{padding:10px 14px;margin-top:8px}
+        }
     </style>
 </head>
 <body>
@@ -143,7 +164,6 @@
     <div id="rdj-splash" class="screen active"><img src="open_page.jpg" alt="RDJ Technologies" class="full-bg-image"></div>
     <div id="loading-screen" class="screen"><div class="loader-container"><h2 class="loading-text">Loading...</h2><div class="progress-bar-container"><div id="loading-progress" class="progress-bar"></div></div></div></div>
     <div id="main-interface" class="screen">
-        <img src="main_page.jpg" alt="Game Background" class="full-bg-image">
         <header class="top-bar">
             <button id="back-to-menu-btn" class="icon-btn back-arrow" style="display:none;position:absolute;top:120px;left:10px;"><span class="arrow-symbol">&#8592;</span></button>
             <button id="open-settings-btn" class="icon-btn settings-btn" style="position:absolute;top:10px;right:10px;"><img src="settings.png" alt="Settings"></button>
