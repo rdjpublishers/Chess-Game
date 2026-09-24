@@ -153,7 +153,8 @@
 
         /* ───────── Splash (replaces open_page.jpg) ───────── */
         #rdj-splash{
-            background:
+            background-color:var(--bg-deep);
+            background-image:
                 radial-gradient(circle at 50% 45%, rgba(201,162,74,.22) 0%, transparent 45%),
                 radial-gradient(circle at 50% 60%, rgba(139,31,44,.12) 0%, transparent 55%);
         }
@@ -235,7 +236,7 @@
         }
 
         /* ───────── Loading screen ───────── */
-        #loading-screen{background:transparent}
+        #loading-screen{background-color:var(--bg-deep);background-image:none}
         .loader-container{width:80%;max-width:340px;text-align:center}
         .loading-text{
             color:var(--brass-bright);
@@ -1435,6 +1436,13 @@
             }
         }
 
+        /* While splash / loading overlays are visible, hide everything behind them */
+        body.loading #quick-nav,
+        body.loading .content-blocks,
+        body.loading .global-footer{
+            display:none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -2191,6 +2199,7 @@
             }
             
             // Event listeners and splash animation
+            document.body.classList.add('loading');
             rdjSplash.style.pointerEvents='none';
             setTimeout(()=>{
                 rdjSplash.style.opacity='0';
@@ -2209,6 +2218,7 @@
                                 loadingScreen.classList.remove('active');
                                 mainInterface.classList.add('active');
                                 splashMenu.classList.add('active');
+                                document.body.classList.remove('loading');
                             },600);
                         }
                     },120);
