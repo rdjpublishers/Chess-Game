@@ -86,16 +86,19 @@
         }
 
         *{box-sizing:border-box;margin:0;padding:0}
-        html,body{height:100%;width:100%}
+        html,body{height:auto;min-height:100%;width:100%}
+        html{scroll-behavior:smooth}
         body{
             font-family:var(--font-body);
             background:var(--bg-deep);
             color:var(--ink);
-            overflow:hidden;
+            overflow-x:hidden;
+            overflow-y:auto;
             -webkit-font-smoothing:antialiased;
             -moz-osx-font-smoothing:grayscale;
-            touch-action:pan-x pan-y;
+            touch-action:pan-y;
             position:relative;
+            min-height:100vh;
         }
 
         /* ───────── Global background art (replaces JPGs) ───────── */
@@ -135,13 +138,18 @@
         }
 
         /* ───────── Screens ───────── */
+        /* Splash + loading use .screen as full-viewport fixed overlays.
+           Main-interface also uses .screen but lives in document flow. */
+        #rdj-splash, #loading-screen{
+            position:fixed;inset:0;z-index:220;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+        }
         .screen{
-            position:absolute;inset:0;
             opacity:0;pointer-events:none;
             transition:opacity .55s ease;
             display:flex;flex-direction:column;align-items:center;justify-content:center;
         }
-        .screen.active{opacity:1;pointer-events:auto;z-index:10}
+        .screen.active{opacity:1;pointer-events:auto}
 
         /* ───────── Splash (replaces open_page.jpg) ───────── */
         #rdj-splash{
@@ -251,42 +259,28 @@
             transition:width .15s linear;
         }
 
-        /* ───────── Main interface ───────── */
+        /* ───────── Main interface (hero / game area, normal document flow) ───────── */
         #main-interface{
-            z-index:20;
-            justify-content:flex-start;
+            position:relative;
+            z-index:10;
+            min-height:100vh;
+            width:100%;
+            justify-content:center;
+            padding-bottom:calc(var(--global-footer-h, 54px) + 24px);
+            scroll-margin-top:0;
         }
 
-        /* ───────── Top bar ───────── */
+        /* ───────── Top bar (minimal, no duplicate branding) ───────── */
         .top-bar{
-            position:absolute;top:0;left:0;right:0;
-            display:flex;justify-content:space-between;align-items:center;
-            padding:14px 18px;z-index:30;
-            background:linear-gradient(180deg, rgba(7,9,15,.85), transparent);
-        }
-        .top-brand{
+            position:absolute;top:14px;right:14px;left:auto;
             display:flex;align-items:center;gap:10px;
-            font-family:var(--font-display);
-            font-weight:600;
-            font-size:.9em;
-            letter-spacing:4px;
-            color:var(--brass);
-            text-transform:uppercase;
-        }
-        .top-brand .crest-mini{
-            width:28px;height:28px;
-            display:flex;align-items:center;justify-content:center;
-            border-radius:50%;
-            background:radial-gradient(circle at 30% 30%, rgba(240,212,138,.3), rgba(201,162,74,.15) 60%, transparent);
-            box-shadow:inset 0 0 0 1px rgba(240,212,138,.4);
-            font-size:18px;color:var(--brass-bright);
-            line-height:1;
+            z-index:30;
         }
         .icon-btn{
             background:rgba(13,17,25,.65);
-            backdrop-filter:blur(6px);
-            -webkit-backdrop-filter:blur(6px);
-            border:1px solid rgba(201,162,74,.22);
+            backdrop-filter:blur(8px);
+            -webkit-backdrop-filter:blur(8px);
+            border:1px solid rgba(201,162,74,.25);
             cursor:pointer;padding:8px;
             display:flex;align-items:center;justify-content:center;
             border-radius:50%;
@@ -294,11 +288,17 @@
             transition:transform .15s ease, background .2s, border-color .2s, box-shadow .2s;
             -webkit-tap-highlight-color:transparent;
             color:var(--ink);
+            box-shadow:0 4px 12px rgba(0,0,0,.45), inset 0 1px 0 rgba(240,212,138,.06);
         }
-        .icon-btn:hover{background:rgba(201,162,74,.18);border-color:var(--brass);box-shadow:0 0 16px rgba(201,162,74,.25)}
+        .icon-btn:hover{background:rgba(201,162,74,.18);border-color:var(--brass);box-shadow:0 6px 18px rgba(0,0,0,.55), 0 0 18px rgba(201,162,74,.28)}
         .icon-btn:active{transform:scale(.92)}
+        .icon-btn:focus-visible{outline:2px solid var(--brass-bright);outline-offset:2px}
         .icon-btn svg{width:20px;height:20px;display:block}
-        .back-arrow{position:absolute;top:80px;left:18px;z-index:31}
+        /* Back arrow slot for the left side during gameplay */
+        .back-arrow{
+            position:absolute;top:14px;left:14px;
+            z-index:31;
+        }
         .back-arrow .arrow-symbol{
             font-size:18px;color:var(--ink);
             font-weight:600;
@@ -1040,6 +1040,401 @@
             opacity:1;
             transform:translateX(-50%) translateY(0);
         }
+
+        /* ───────── AdSense-ready content block + global footer ───────── */
+        :root{
+            --global-footer-h:54px;
+        }
+        @media (max-width:520px){
+            :root{ --global-footer-h:96px; }
+        }
+
+        .screen{
+            padding-bottom:var(--global-footer-h);
+            box-sizing:border-box;
+        }
+
+        /* Info / hero text block on the splash menu (NOT hidden in a modal) */
+        .game-info-block{
+            margin-top:18px;
+            padding:14px 16px;
+            background:linear-gradient(180deg, rgba(201,162,74,.07), rgba(201,162,74,.02));
+            border:1px solid rgba(201,162,74,.20);
+            border-left:2px solid var(--brass);
+            border-radius:var(--radius-md);
+            text-align:left;
+            position:relative;z-index:1;
+            box-shadow:inset 0 1px 0 rgba(240,212,138,.06);
+        }
+        .game-info-block p{
+            margin:0;
+            color:var(--ink-soft);
+            font-size:.84em;
+            line-height:1.6;
+            font-family:var(--font-body);
+            letter-spacing:.15px;
+        }
+        .game-info-block strong{
+            color:var(--brass-bright);
+            font-weight:600;
+        }
+        @media (max-width:480px){
+            .game-info-block{margin-top:14px;padding:12px 14px}
+            .game-info-block p{font-size:.8em}
+        }
+
+        /* Persistent footer above the screens, below modals */
+        .global-footer{
+            position:fixed;
+            left:0;right:0;bottom:0;
+            z-index:90;
+            background:linear-gradient(180deg, rgba(7,9,15,.86), rgba(13,17,25,.97));
+            border-top:1px solid rgba(201,162,74,.28);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            padding:9px 14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:6px;
+            text-align:center;
+            color:var(--ink-soft);
+            font-family:var(--font-body);
+            font-size:12px;
+            line-height:1.4;
+            letter-spacing:.6px;
+            box-shadow:0 -8px 24px rgba(0,0,0,.55), inset 0 1px 0 rgba(240,212,138,.10);
+        }
+        .global-footer .copyright{
+            font-family:var(--font-display);
+            font-weight:600;
+            letter-spacing:2.5px;
+            text-transform:uppercase;
+            color:var(--brass);
+            font-size:11px;
+            margin-right:6px;
+            white-space:nowrap;
+        }
+        .global-footer .sep{
+            color:var(--brass-dim);
+            opacity:.6;
+            margin:0 4px;
+            user-select:none;
+        }
+        .global-footer nav{
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            justify-content:center;
+            gap:2px;
+        }
+        .global-footer a{
+            color:var(--ink-soft);
+            text-decoration:none;
+            font-weight:500;
+            letter-spacing:.9px;
+            padding:2px 4px;
+            border-radius:4px;
+            transition:color .2s, text-shadow .2s, background .2s;
+            -webkit-tap-highlight-color:transparent;
+            white-space:nowrap;
+        }
+        .global-footer a:hover,
+        .global-footer a:focus-visible{
+            color:var(--brass-bright);
+            text-shadow:0 0 10px rgba(240,212,138,.4);
+            background:rgba(201,162,74,.08);
+            outline:none;
+        }
+        @media (max-width:520px){
+            .global-footer{font-size:11.5px;padding:8px 10px}
+            .global-footer .copyright{flex-basis:100%;margin:0 0 4px 0;text-align:center}
+        }
+
+        /* Toast must sit ABOVE the new persistent footer */
+        .toast{
+            bottom:calc(var(--global-footer-h) + 14px) !important;
+        }
+
+        /* ───────── Content sections (AdSense-ready; hidden during gameplay) ───────── */
+        .content-blocks{
+            position:relative;
+            z-index:5;
+            max-width:880px;
+            margin:0 auto;
+            padding:48px 24px calc(var(--global-footer-h, 54px) + 80px);
+            /* Smooth fade-out when body.in-game is added */
+            transition:opacity .35s ease, max-height .35s ease, margin .35s ease, padding .35s ease;
+        }
+        .content-block{
+            margin-bottom:60px;
+            scroll-margin-top:80px;
+        }
+        .content-block:last-child{margin-bottom:0}
+        .content-block h2{
+            font-family:var(--font-display);
+            font-size:1.85em;
+            font-weight:700;
+            color:var(--brass-bright);
+            letter-spacing:3px;
+            text-transform:uppercase;
+            margin:0 0 22px;
+            padding-bottom:14px;
+            border-bottom:1px solid rgba(201,162,74,.28);
+            text-shadow:0 2px 10px rgba(0,0,0,.5);
+            line-height:1.2;
+        }
+        .content-block h2 .h2-prefix{
+            display:inline-block;
+            color:var(--brass-dim);
+            font-size:.5em;
+            letter-spacing:4px;
+            margin-right:12px;
+            vertical-align:middle;
+            font-weight:600;
+        }
+        .content-block h3{
+            font-family:var(--font-display);
+            font-size:1.22em;
+            font-weight:600;
+            color:var(--brass);
+            letter-spacing:1.4px;
+            margin:28px 0 12px;
+            line-height:1.3;
+        }
+        .content-block h4{
+            color:var(--brass-bright);
+            font-size:.95em;
+            font-weight:600;
+            letter-spacing:.8px;
+            margin:20px 0 8px;
+        }
+        .content-block p{
+            color:var(--ink-soft);
+            font-size:1em;
+            line-height:1.78;
+            margin:0 0 16px;
+            max-width:72ch;
+        }
+        .content-block p.lead{
+            font-size:1.08em;
+            color:var(--ink);
+            line-height:1.72;
+        }
+        .content-block strong{color:var(--brass-bright);font-weight:600}
+        .content-block em{color:var(--ink);font-style:italic}
+        .content-block a{
+            color:var(--brass-bright);
+            text-decoration:none;
+            border-bottom:1px dotted rgba(201,162,74,.5);
+            transition:color .2s, border-color .2s;
+        }
+        .content-block a:hover{
+            color:var(--ink);
+            border-bottom-color:var(--brass-bright);
+        }
+        .content-block ul, .content-block ol{
+            color:var(--ink-soft);
+            font-size:1em;
+            line-height:1.8;
+            margin:0 0 20px;
+            padding-left:24px;
+            max-width:72ch;
+        }
+        .content-block li{margin-bottom:8px}
+        .content-block li::marker{color:var(--brass-dim)}
+        .content-block ul.features{
+            list-style:none;
+            padding:0;
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+            gap:14px;
+            margin:0 0 20px;
+        }
+        .content-block ul.features li{
+            background:linear-gradient(180deg, rgba(31,39,56,.55), rgba(20,27,42,.55));
+            border:1px solid rgba(201,162,74,.22);
+            border-left:2px solid var(--brass);
+            border-radius:var(--radius-md);
+            padding:14px 16px;
+            color:var(--ink-soft);
+            line-height:1.55;
+            font-size:.94em;
+            position:relative;
+            padding-left:42px;
+        }
+        .content-block ul.features li::before{
+            content:"♚";
+            position:absolute;
+            left:14px;top:13px;
+            color:var(--brass);
+            font-size:1.1em;
+            line-height:1;
+        }
+        .content-block ul.features li strong{
+            display:block;
+            color:var(--brass-bright);
+            font-size:.95em;
+            margin-bottom:4px;
+            letter-spacing:.4px;
+        }
+
+        /* Pieces reference table */
+        .pieces-table{
+            width:100%;
+            border-collapse:collapse;
+            margin:8px 0 24px;
+            background:linear-gradient(180deg, rgba(31,39,56,.4), rgba(20,27,42,.4));
+            border:1px solid rgba(201,162,74,.2);
+            border-radius:var(--radius-md);
+            overflow:hidden;
+            font-size:.94em;
+            color:var(--ink-soft);
+        }
+        .pieces-table th, .pieces-table td{
+            padding:12px 14px;
+            text-align:left;
+            border-bottom:1px solid rgba(201,162,74,.12);
+            vertical-align:top;
+        }
+        .pieces-table th{
+            background:rgba(201,162,74,.08);
+            color:var(--brass-bright);
+            font-family:var(--font-display);
+            letter-spacing:1.2px;
+            font-size:.82em;
+            text-transform:uppercase;
+            font-weight:600;
+        }
+        .pieces-table tr:last-child td{border-bottom:none}
+        .pieces-table td.glyph{
+            font-size:1.6em;
+            color:var(--brass-bright);
+            font-family:var(--font-display);
+            width:54px;
+            text-align:center;
+        }
+        .pieces-table td.piece-name{
+            color:var(--ink);
+            font-weight:600;
+            width:120px;
+        }
+
+        /* FAQ */
+        .faq-list{
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+        .faq-item{
+            background:linear-gradient(180deg, rgba(31,39,56,.55), rgba(20,27,42,.55));
+            border:1px solid rgba(201,162,74,.22);
+            border-radius:var(--radius-md);
+            overflow:hidden;
+            transition:border-color .2s, box-shadow .2s;
+        }
+        .faq-item:hover{border-color:rgba(201,162,74,.45)}
+        .faq-item[open]{
+            border-color:var(--brass);
+            box-shadow:0 0 0 1px rgba(201,162,74,.15), 0 8px 24px rgba(0,0,0,.35);
+        }
+        .faq-item summary{
+            padding:16px 20px;
+            font-weight:600;
+            color:var(--ink);
+            cursor:pointer;
+            list-style:none;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            font-family:var(--font-body);
+            font-size:1em;
+            letter-spacing:.2px;
+            transition:background .2s;
+        }
+        .faq-item summary::-webkit-details-marker{display:none}
+        .faq-item summary:hover{background:rgba(201,162,74,.07)}
+        .faq-item summary::after{
+            content:"+";
+            font-size:1.6em;
+            color:var(--brass);
+            transition:transform .25s;
+            font-weight:400;
+            line-height:1;
+        }
+        .faq-item[open] summary::after{transform:rotate(45deg)}
+        .faq-item .faq-body{
+            padding:0 20px 18px;
+            color:var(--ink-soft);
+            line-height:1.7;
+            font-size:.96em;
+        }
+        .faq-item .faq-body p{margin:0 0 8px}
+        .faq-item .faq-body p:last-child{margin-bottom:0}
+
+        /* Quick nav (jump to section; hidden during gameplay) */
+        .quick-nav{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px 12px;
+            justify-content:center;
+            margin:32px auto 0;
+            max-width:880px;
+            padding:18px 24px;
+            background:linear-gradient(180deg, rgba(31,39,56,.55), rgba(20,27,42,.55));
+            border:1px solid rgba(201,162,74,.22);
+            border-radius:var(--radius-md);
+            position:relative;
+            z-index:5;
+            transition:opacity .35s ease, max-height .35s ease, margin .35s ease, padding .35s ease;
+        }
+        .quick-nav a{
+            color:var(--ink-soft);
+            text-decoration:none;
+            font-size:.85em;
+            font-weight:500;
+            letter-spacing:.4px;
+            padding:6px 12px;
+            border-radius:999px;
+            border:1px solid rgba(201,162,74,.2);
+            background:rgba(7,9,15,.4);
+            transition:all .2s;
+        }
+        .quick-nav a:hover{
+            color:var(--brass-bright);
+            border-color:var(--brass);
+            background:rgba(201,162,74,.12);
+            text-shadow:0 0 8px rgba(240,212,138,.3);
+        }
+
+        @media (max-width:680px){
+            .content-blocks{padding:36px 18px calc(var(--global-footer-h, 54px) + 80px)}
+            .content-block{margin-bottom:48px}
+            .content-block h2{font-size:1.5em;letter-spacing:2px}
+            .content-block h3{font-size:1.12em}
+            .content-block p, .content-block ul, .content-block ol{font-size:.98em}
+            .quick-nav{padding:14px 16px;margin-top:24px}
+            .quick-nav a{font-size:.8em;padding:5px 10px}
+            .pieces-table{font-size:.88em}
+            .pieces-table th, .pieces-table td{padding:10px}
+            .pieces-table td.piece-name{width:auto}
+        }
+
+        /* Hide content sections while a game is in progress */
+        body.in-game #quick-nav,
+        body.in-game .content-blocks{
+            display:none;
+        }
+        /* Also hide them on short viewports where they'd be visible */
+        @media (max-height:780px){
+            body.in-game #quick-nav,
+            body.in-game .content-blocks{
+                display:none !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -1078,21 +1473,17 @@
     </div>
 
     <div id="main-interface" class="screen">
+        <button id="back-to-menu-btn" class="icon-btn back-arrow" aria-label="Back to menu" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
         <header class="top-bar">
-            <div class="top-brand">
-                <span class="crest-mini">♔</span>
-                <span>Chess</span>
-            </div>
-            <button id="open-settings-btn" class="icon-btn" aria-label="Settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <button id="open-settings-btn" class="icon-btn" aria-label="Open settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-            </button>
-            <button id="back-to-menu-btn" class="icon-btn back-arrow" aria-label="Back to menu" style="display:none">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </button>
         </header>
@@ -1112,6 +1503,9 @@
                         <span>Play With Computer</span>
                     </button>
                 </div>
+                <section class="game-info-block" aria-label="About this chess game">
+                    <p><strong>Free online chess by RDJ Publishers.</strong> Play against a friend in Two-Player mode or challenge the computer AI across three difficulty levels. Full rules supported: castling, en&nbsp;passant, pawn promotion, check and checkmate. No sign-up, no download — works instantly in your browser on desktop and mobile.</p>
+                </section>
                 <div class="piece-strip" aria-hidden="true">
                     <span>♙</span><span>♘</span><span>♗</span><span>♖</span><span>♕</span><span>♔</span><span>♖</span><span>♗</span><span>♘</span><span>♙</span>
                 </div>
@@ -1232,7 +1626,198 @@
         </div>
     </div>
 
+    <nav class="quick-nav" aria-label="Page sections" id="quick-nav">
+        <a href="#about">About</a>
+        <a href="#how-to-play">How to Play</a>
+        <a href="#modes">Game Modes</a>
+        <a href="#features">Features</a>
+        <a href="#tips">Tips</a>
+        <a href="#faq">FAQ</a>
+    </nav>
+
+    <article class="content-blocks" id="content-blocks" aria-label="Chess game guide and information">
+
+        <section class="content-block" id="about" aria-labelledby="about-h2">
+            <h2 id="about-h2"><span class="h2-prefix">01</span>About RDJ Publishers Chess</h2>
+            <p class="lead">RDJ Publishers Chess is a free online chess game that lets you play classic chess right in your web browser — no downloads, no sign-ups, no plugins. Whether you want to challenge a friend on the same device in <strong>Two-Player mode</strong> or test your skills against the computer AI across three difficulty levels, the game is built to deliver a smooth, accessible experience for casual players and serious chess enthusiasts alike.</p>
+            <p>Designed and developed by <strong>RDJ Publishers</strong>, this chess application focuses on three core principles: full chess rules, a clean and distraction-free interface, and instant playability. Open the page and within seconds you're sitting at a fully-rendered 8×8 board ready to make your first move. Everything runs in modern HTML5 and JavaScript — even the chess engine is bundled directly into the page so you don't need an internet connection once the page has loaded.</p>
+            <p>The board supports every official chess rule: <strong>castling</strong> (both kingside and queenside), <strong>en passant</strong> capture, <strong>pawn promotion</strong>, <strong>check</strong> detection, and <strong>checkmate</strong> or <strong>stalemate</strong> resolution. The same engine powers both the Two-Player experience and the computer opponent in vs Computer mode, so the rules never change — only who's sitting across the board from you.</p>
+            <p>Our goal with this project is to make learning and playing chess as friction-free as possible. There are no advertisements interrupting the board, no pop-ups stealing your focus, and no forced accounts. Just chess, the way it has been played for over a thousand years, accessible from any modern browser on desktop, laptop, tablet, or phone.</p>
+        </section>
+
+        <section class="content-block" id="how-to-play" aria-labelledby="htp-h2">
+            <h2 id="htp-h2"><span class="h2-prefix">02</span>How to Play Chess — Rules for Beginners</h2>
+            <p>Chess is a two-player strategy board game played on an 8×8 grid of 64 alternating light and dark squares. Each player begins with 16 pieces: one king, one queen, two rooks, two bishops, two knights, and eight pawns. The objective is simple: <strong>checkmate your opponent's king</strong>. That means placing the king under direct attack (called <em>check</em>) with no legal move that can remove the threat.</p>
+
+            <h3>The Pieces and How They Move</h3>
+            <table class="pieces-table" aria-label="Chess piece movements">
+                <thead>
+                    <tr><th aria-label="Symbol"></th><th>Piece</th><th>How it moves</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="glyph">♔</td><td class="piece-name">King</td><td>Exactly one square in any direction — up, down, left, right, or diagonal. The king may never move into check.</td></tr>
+                    <tr><td class="glyph">♕</td><td class="piece-name">Queen</td><td>The most powerful piece. Any number of squares in any direction — straight or diagonal — provided the path is clear.</td></tr>
+                    <tr><td class="glyph">♖</td><td class="piece-name">Rook</td><td>Any number of squares horizontally or vertically. Rooks shine in the endgame when the board opens up.</td></tr>
+                    <tr><td class="glyph">♗</td><td class="piece-name">Bishop</td><td>Any number of squares diagonally. Each bishop stays on the color of its starting square.</td></tr>
+                    <tr><td class="glyph">♘</td><td class="piece-name">Knight</td><td>An L-shape: two squares in one direction and one square perpendicular. The only piece that can jump over others.</td></tr>
+                    <tr><td class="glyph">♙</td><td class="piece-name">Pawn</td><td>Forward one square (or two from its starting rank), captures diagonally. Has unique rules: en passant, promotion, and the two-square first move.</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Special Rules Worth Knowing</h3>
+            <p><strong>Castling.</strong> A king and rook can move together as a single turn when neither has moved, the squares between them are empty, and the king is not in check or passing through check.</p>
+            <p><strong>En passant.</strong> When an opponent's pawn moves two squares forward from its starting rank and lands beside your pawn, you may capture it as if it had moved only one square. This capture must be made immediately.</p>
+            <p><strong>Pawn promotion.</strong> When a pawn reaches the opposite end of the board, it must be promoted to a queen, rook, bishop, or knight of the same color. Most players choose a queen in nearly every situation.</p>
+            <p><strong>Check.</strong> When a king is under direct attack, the player must resolve the threat on their very next move.</p>
+            <p><strong>Checkmate.</strong> When a king is in check and no legal move can remove the threat, the game ends and the attacking player wins.</p>
+            <p><strong>Stalemate.</strong> When a player has no legal moves but their king is not in check, the game ends in a draw.</p>
+        </section>
+
+        <section class="content-block" id="modes" aria-labelledby="modes-h2">
+            <h2 id="modes-h2"><span class="h2-prefix">03</span>Game Modes</h2>
+            <p>RDJ Publishers Chess offers two distinct game modes, both running on the same engine and the same set of rules. Choose the mode that matches your mood and your company.</p>
+
+            <h3>Two-Player Mode</h3>
+            <p>Two-Player mode is designed for two people sharing a single device. Players take turns at the same screen, with the interface clearly indicating whose turn it is and which color holds which pieces. This mode is ideal for:</p>
+            <ul>
+                <li>Teaching a child, sibling, or friend the rules in person.</li>
+                <li>Quick games during travel, breaks, or downtime.</li>
+                <li>Friendly matches without the pressure of an AI opponent.</li>
+                <li>Tactics practice with a sparring partner.</li>
+            </ul>
+            <p>Move legally, undo freely, and restart whenever you want. There is no clock — play at whatever pace feels natural.</p>
+
+            <h3>Play With Computer</h3>
+            <p>In vs Computer mode, you always play as <strong>White</strong> and the AI plays as Black. This is the recommended mode for solo play and for players who want to practice against a consistent opponent. Three difficulty levels let you match the AI to your skill:</p>
+            <ul>
+                <li><strong>Easy</strong> — Casual play. The engine makes quicker, less optimal moves. Perfect for absolute beginners, kids, or anyone who just wants a relaxing game without pressure.</li>
+                <li><strong>Medium</strong> — Balanced. The engine looks deeper and uses smarter heuristics, but still makes occasional mistakes. Most adults who know the rules will find this a satisfying challenge.</li>
+                <li><strong>Hard</strong> — Deep search. The engine searches more plies and uses stronger evaluation. Expect long, deliberate play and tough tactics — ideal for intermediate players looking to be tested.</li>
+            </ul>
+            <p>You can switch difficulty at any time before starting a new game.</p>
+        </section>
+
+        <section class="content-block" id="features" aria-labelledby="features-h2">
+            <h2 id="features-h2"><span class="h2-prefix">04</span>Features</h2>
+            <p>Everything you need for a clean, modern chess experience — nothing you don't.</p>
+            <ul class="features" aria-label="Chess game features">
+                <li><strong>Full chess rules</strong>Castling, en passant, pawn promotion, check, checkmate, stalemate, and illegal-move prevention all built in.</li>
+                <li><strong>Two game modes</strong>Two-Player on one device, or vs Computer AI with three difficulty levels.</li>
+                <li><strong>Mobile-friendly</strong>Designed to work on phones, tablets, laptops, and desktops. Touch input is fully supported.</li>
+                <li><strong>No sign-up, no download</strong>Open the page and play. Nothing to install, no account required.</li>
+                <li><strong>Sound effects</strong>Subtle move and capture sounds with a toggle in Settings.</li>
+                <li><strong>Undo</strong>Take back moves during casual play without losing the game state.</li>
+                <li><strong>Restart</strong>Reset the board to the starting position at any time.</li>
+                <li><strong>Pawn promotion picker</strong>Choose queen, rook, bishop, or knight when promoting.</li>
+                <li><strong>Check indicator</strong>The king square pulses red when in check, so you never miss it.</li>
+                <li><strong>Last-move highlights</strong>See which piece just moved and where it landed.</li>
+                <li><strong>Settings menu</strong>Toggle sound, view app info, return to the main menu.</li>
+                <li><strong>Persistent site navigation</strong>Site footer with Home, About, Contact, Privacy Policy, and Terms is always within reach.</li>
+            </ul>
+        </section>
+
+        <section class="content-block" id="tips" aria-labelledby="tips-h2">
+            <h2 id="tips-h2"><span class="h2-prefix">05</span>Chess Tips for Beginners</h2>
+            <p>Whether you're playing your first game or your hundredth, a few principles will take you further than memorizing openings. Keep these in mind at the board.</p>
+
+            <h3>Control the Center</h3>
+            <p>The four central squares — <strong>e4, d4, e5, d5</strong> — are the most important squares on the board. Pieces in the center control more squares and have more mobility than pieces stuck on the edge. As a beginner, develop your pieces toward the center before attacking.</p>
+
+            <h3>Develop Your Pieces Early</h3>
+            <p>In the opening, move each piece (knights and bishops first, then queen and rooks) off the back rank and into active squares. Avoid moving the same piece multiple times before you've developed the others.</p>
+
+            <h3>Castle Early</h3>
+            <p>Castling gets your king to safety and connects your rooks. Most experienced players castle within the first 8–10 moves. Leaving your king in the center for too long is one of the most common beginner mistakes.</p>
+
+            <h3>Watch for Forks and Pins</h3>
+            <p>A <strong>fork</strong> is when one piece attacks two or more enemy pieces at once — most commonly done with a knight. A <strong>pin</strong> is when a piece cannot move without exposing a more valuable piece (often the king) behind it. Learning to spot these tactics is the fastest way to win material.</p>
+
+            <h3>Don't Hang Pieces</h3>
+            <p><em>Hanging</em> a piece means leaving it undefended where your opponent can capture it. Before every move, double-check: is the square I'm moving to safe? Is the square I'm moving from still defended?</p>
+
+            <h3>Think Before You Move</h3>
+            <p>Resist the urge to make moves quickly just because it's your turn. Look at every check, capture, and threat on the board first. Ask yourself: what does my opponent want? What is their best response to my move?</p>
+        </section>
+
+        <section class="content-block" id="faq" aria-labelledby="faq-h2">
+            <h2 id="faq-h2"><span class="h2-prefix">06</span>Frequently Asked Questions</h2>
+
+            <div class="faq-list">
+                <details class="faq-item">
+                    <summary>Is this chess game really free?</summary>
+                    <div class="faq-body">
+                        <p>Yes. RDJ Publishers Chess is completely free to play. There are no in-app purchases, no subscriptions, and no hidden fees.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Do I need to create an account?</summary>
+                    <div class="faq-body">
+                        <p>No account or sign-up is required. Open the page and start playing immediately.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Does this work on phones and tablets?</summary>
+                    <div class="faq-body">
+                        <p>Yes. The interface is designed to be touch-friendly and responsive. It works on any modern browser on iOS, Android, Windows, macOS, and Linux.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Can I play against another person online?</summary>
+                    <div class="faq-body">
+                        <p>This version supports Two-Player mode on the same device. Online multiplayer is not available in this release.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>How strong is the AI?</summary>
+                    <div class="faq-body">
+                        <p>The AI uses an alpha-beta search with piece-square tables, transposition tables, and killer-move heuristics. It plays a solid casual game at Easy and Medium, and offers a real challenge at Hard for club-level players.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Can I undo a move?</summary>
+                    <div class="faq-body">
+                        <p>Yes. Use the Undo button in the controls below the board. In vs Computer mode, undo takes back both your move and the computer's last move.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>What if I close the page mid-game?</summary>
+                    <div class="faq-body">
+                        <p>The board state is not saved across sessions. Closing or refreshing the page will reset the game to the starting position.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Does this game collect my data?</summary>
+                    <div class="faq-body">
+                        <p>No personal data is collected by the game itself. RDJ Publishers may use standard, anonymized analytics (Google Analytics) and contextual ads (Google AdSense) to understand usage and keep the site running, as described in the Privacy Policy.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary>Who made this game?</summary>
+                    <div class="faq-body">
+                        <p>RDJ Publishers Chess was designed, developed, and published by RDJ Publishers. For support, contact us at <a href="mailto:RDJpublishers@gmail.com">RDJpublishers@gmail.com</a>.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+    </article>
+
     <div id="toast" class="toast"></div>
+
+    <footer class="global-footer" role="contentinfo" aria-label="Site navigation">
+        <span class="copyright">© 2026 RDJ Publishers</span>
+        <nav aria-label="Footer">
+            <a href="https://rdjpublishers.com/">Home</a>
+            <span class="sep">·</span>
+            <a href="https://rdjpublishers.com/about.html">About</a>
+            <span class="sep">·</span>
+            <a href="https://rdjpublishers.com/contact.html">Contact</a>
+            <span class="sep">·</span>
+            <a href="https://rdjpublishers.com/privacy-policy.html">Privacy Policy</a>
+            <span class="sep">·</span>
+            <a href="https://rdjpublishers.com/terms.html">Terms</a>
+        </nav>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded',()=>{
@@ -1547,9 +2132,9 @@
             function restartGame(){cancelAIFully();board=JSON.parse(JSON.stringify(initialBoard));selectedSquare=null;turn='white';moveHistory=[];isGameOver=false;checkmatedColor=null;canCastle={K:true,Q:true,k:true,q:true};enPassantTarget=null;lastAiMove=null;hideGameOverModal();promotionModal.classList.remove('visible');restartConfirmModal.classList.remove('visible');goBackConfirmModal.classList.remove('visible');gameBoardContainer.style.opacity='1';gameControlsFooter.style.opacity='1';boardElement.style.opacity='1';boardElement.style.pointerEvents='';thinkingIndicator.style.display='none';renderBoard();}
             function playButtonSound(){if(isSoundOn&&isSoundAvailable){try{buttonSound.play().catch(()=>{isSoundAvailable=false;});}catch(e){isSoundAvailable=false;}}}
             function toggleSound(){isSoundOn=!isSoundOn;soundSwitch.textContent=isSoundOn?'On':'Off';soundSwitch.classList.toggle('on',isSoundOn);if(isSoundOn)playButtonSound();}
-            function goToMenu(){cancelAIFully();isSettingsOpen=false;isComputerMode=false;settingsModal.classList.remove('visible');aboutModal.classList.remove('visible');goBackConfirmModal.classList.remove('visible');difficultyMenu.style.display='none';gameBoardContainer.classList.remove('active');hideGameOverModal();gameControlsFooter.style.display='none';backToMenuBtn.style.display='none';boardElement.style.pointerEvents='';boardElement.style.opacity='1';thinkingIndicator.style.display='none';splashMenu.classList.add('active');restartGame();playButtonSound();}
-            function startGame(){isComputerMode=false;splashMenu.classList.remove('active');difficultyMenu.style.display='none';gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();playButtonSound();}
-            function startComputerGame(difficulty){isComputerMode=true;aiDifficulty=difficulty;computerColor='black';difficultyMenu.style.display='none';splashMenu.classList.remove('active');gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();playButtonSound();}
+            function goToMenu(){cancelAIFully();isSettingsOpen=false;isComputerMode=false;settingsModal.classList.remove('visible');aboutModal.classList.remove('visible');goBackConfirmModal.classList.remove('visible');difficultyMenu.style.display='none';gameBoardContainer.classList.remove('active');hideGameOverModal();gameControlsFooter.style.display='none';backToMenuBtn.style.display='none';boardElement.style.pointerEvents='';boardElement.style.opacity='1';thinkingIndicator.style.display='none';splashMenu.classList.add('active');restartGame();document.body.classList.remove('in-game');playButtonSound();window.scrollTo({top:0,behavior:'smooth'});}
+            function startGame(){isComputerMode=false;splashMenu.classList.remove('active');difficultyMenu.style.display='none';gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();document.body.classList.add('in-game');playButtonSound();window.scrollTo({top:0,behavior:'smooth'});}
+            function startComputerGame(difficulty){isComputerMode=true;aiDifficulty=difficulty;computerColor='black';difficultyMenu.style.display='none';splashMenu.classList.remove('active');gameBoardContainer.classList.add('active');gameControlsFooter.style.display='flex';backToMenuBtn.style.display='block';restartGame();document.body.classList.add('in-game');playButtonSound();window.scrollTo({top:0,behavior:'smooth'});}
             function viewLastGameState(){if(moveHistory.length){const ls=moveHistory[moveHistory.length-1];board=ls.board.map(r=>[...r]);turn=ls.turn;canCastle={...ls.canCastle};enPassantTarget=ls.enPassantTarget?{...ls.enPassantTarget}:null;checkmatedColor=ls.checkmatedColor||null;isGameOver=true;hideGameOverModal();gameBoardContainer.style.opacity='1';gameControlsFooter.style.opacity='1';renderBoard();}playButtonSound();}
             
             function doUndo(){
