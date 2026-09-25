@@ -2217,31 +2217,24 @@
             }
             
             // Event listeners and splash animation
+            // Fast intro: brief splash (~700ms) → quick fade (~400ms) → main menu.
+            // Total ≈ 1.1s (was ~6.4s). The artificial #loading-screen progress
+            // stage is skipped entirely so first paint of the menu feels instant.
             document.body.classList.add('loading');
             rdjSplash.style.pointerEvents='none';
             setTimeout(()=>{
                 rdjSplash.style.opacity='0';
                 setTimeout(()=>{
                     rdjSplash.classList.remove('active');
-                    loadingScreen.classList.add('active');
-                    let p=0;
-                    const iv=setInterval(()=>{
-                        p+=4;
-                        loadingProgress.style.width=p+'%';
-                        if(p>=100){
-                            clearInterval(iv);
-                            loadingScreen.style.pointerEvents='none';
-                            loadingScreen.style.opacity='0';
-                            setTimeout(()=>{
-                                loadingScreen.classList.remove('active');
-                                mainInterface.classList.add('active');
-                                splashMenu.classList.add('active');
-                                document.body.classList.remove('loading');
-                            },600);
-                        }
-                    },120);
-                },600);
-            },2500);
+                    // Hide loading screen outright; it never gets .active so it
+                    // stays at opacity:0, but setting display:none guarantees no
+                    // accidental flash if CSS is later tweaked.
+                    loadingScreen.style.display='none';
+                    mainInterface.classList.add('active');
+                    splashMenu.classList.add('active');
+                    document.body.classList.remove('loading');
+                },400);
+            },700);
             
             twoPlayerBtn.addEventListener('click',startGame);
             vsComputerBtn.addEventListener('click',()=>{playButtonSound();splashMenu.classList.remove('active');difficultyMenu.style.display='block';});
